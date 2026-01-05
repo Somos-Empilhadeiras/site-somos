@@ -28,22 +28,7 @@ body {
   overflow-x: hidden;
   scroll-behavior: smooth;
 }
-
-/* src/app/globals.css */
-
-/* APLICA O ZOOM APENAS EM NOTEBOOKS E DESKTOPS PEQUENOS */
-/* Ignora celulares e tablets (abaixo de 1024px) */
-@media (min-width: 1024px) and (max-width: 1500px) {
-  html {
-    font-size: 85%;
-    /* Reduz escala apenas no notebook */
-  }
-}
-
-/* Garante padrão em celulares */
-@media (max-width: 1023px) {
-  html {
-    font-size: 100%;
-    /* Mantém tamanho original no mobile */
-  }
+@keyframes progress {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
 }

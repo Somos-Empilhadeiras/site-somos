@@ -1,126 +1,111 @@
 import Link from 'next/link';
-import { Facebook, Instagram, Linkedin, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { Facebook, Instagram, Linkedin } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#e9e8e8] text-slate-700 flex flex-col items-center text-center pt-16 pb-8 px-4">
-      <div className=" grid grid-cols-[2fr_3fr] gap-x-5 container w-full">
+    <footer className="bg-[#e9e8e8] text-slate-700 pt-16 pb-8 px-4">
+      <div className="container mx-auto">
 
-        <div className='flex flex-col items-center gap-y-5 w-full'>
-          {/* LOGO */}
-          <Link href="/" className="flex items-center gap-3 group select-none">
-            <img alt='Logo somos' src="/logo.png" width={250} height={250} />
-            <img alt='Logo heli' src="/heli.png" width={175} height={175} />
-          </Link>
+        {/* BLOCO PRINCIPAL */}
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-12">
 
-          {/* Título Redes Sociais */}
-          <h3 className="text-xl font-semibold">Siga as nossas redes sociais</h3>
+          {/* COLUNA LOGO + REDES */}
+          <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-6">
+            <Link href="/" className="flex items-center gap-4 select-none">
+              <Image
+                src="/logo.png"
+                alt="Logo Somos"
+                width={180}
+                height={60}
+                className="w-40 lg:w-48 h-auto"
+              />
+              <Image
+                src="/heli.png"
+                alt="Logo Heli"
+                width={140}
+                height={60}
+                className="w-32 lg:w-40 h-auto"
+              />
+            </Link>
 
+            <h3 className="text-lg font-semibold">
+              Siga as nossas redes sociais
+            </h3>
 
-          {/* Ícones */}
-          <div className="flex gap-4 mb-10">
-            <a href="#" className="bg-white/10 hover:bg-white/50 p-3 rounded-full transition-all hover:-translate-y-1">
-              <Instagram size={24} className="" />
-            </a>
-            <a href="#" className="bg-white/10 hover:bg-white/50 p-3 rounded-full transition-all hover:-translate-y-1">
-              <Facebook size={24} className="" />
-            </a>
-            <a href="#" className="bg-white/10 hover:bg-white/50 p-3 rounded-full transition-all hover:-translate-y-1">
-              <Linkedin size={24} className="" />
-            </a>
+            <div className="flex gap-4">
+              {[Instagram, Facebook, Linkedin].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="bg-white/40 hover:bg-white p-3 rounded-full transition hover:-translate-y-1"
+                >
+                  <Icon size={22} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* COLUNAS DE LINKS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+            {/* GERAL */}
+            <div>
+              <p className="font-semibold mb-3">Geral</p>
+              <ul className="space-y-2">
+                <li><Link href="/">Início</Link></li>
+                <li><Link href="/sobre">Sobre nós</Link></li>
+                <li><Link href="/empilhadeiras">Empilhadeiras</Link></li>
+                <li><Link href="/produtos">Produtos</Link></li>
+                <li><Link href="/unidades">Unidades</Link></li>
+              </ul>
+            </div>
+
+            {/* EMPILHADEIRAS */}
+            <div>
+              <p className="font-semibold mb-3">Empilhadeiras</p>
+              <ul className="space-y-2">
+                <li><Link href="/empilhadeiras">Todas</Link></li>
+                <li><Link href="/empilhadeiras/eletricas">Elétricas</Link></li>
+                <li><Link href="/empilhadeiras/combustao">Combustão</Link></li>
+                <li><Link href="/empilhadeiras/rebocadores">Rebocadores</Link></li>
+              </ul>
+            </div>
+
+            {/* PRODUTOS */}
+            <div>
+              <p className="font-semibold mb-3">Produtos</p>
+              <ul className="space-y-2">
+                <li><Link href="/produtos/pecas">Peças</Link></li>
+                <li><Link href="/produtos/servicos">Serviços</Link></li>
+                <li><Link href="/produtos/pneus">Pneus</Link></li>
+              </ul>
+            </div>
+
+            {/* OUTROS */}
+            <div>
+              <p className="font-semibold mb-3">Outros</p>
+              <ul className="space-y-2">
+                <li><Link href="/#contato">Fale conosco</Link></li>
+                <li><Link href="/#unidades">Nossas Unidades</Link></li>
+                <li>
+                  <Link href="https://apps.somosempilhadeiras.com">
+                    Área do Colaborador
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
           </div>
         </div>
 
-        <div className='grid grid-cols-4 gap-x-5 container w-full'>
-          <div className="flex items-baseline  flex-col mb-6  h-full">
-            <p className='font-semibold mb-3'>
-              Geral
-            </p>
-
-            <div className="flex flex-col gap-2">
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/"}>Inicio</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/sobre"}>Sobre nós</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/empilhadeiras"}>Empilhadeiras</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/produtos"}>Produtos</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/unidades"}>Unidades</Link>
-              </span>
-            </div>
-          </div>
-          <div className="flex items-baseline  flex-col mb-6 h-full">
-            <p className='font-semibold mb-3'>
-              Empilhadeiras
-            </p>
-
-            <div className='flex flex-col gap-2'>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/empilhadeiras/"}>Todas as empilhadeiras</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/empilhadeiras/eletricas"}>Elétricas</Link>
-              </span>
-              <span className='flex gap-2 hover:-translate-y-0.5 transition-all hover:text-gray-400 '>
-                <Link href={"/empilhadeiras/combustao"}>Combustão</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all '>
-                <Link href={"/empilhadeiras/rebocadores"}>Rebocadores</Link>
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-baseline  flex-col mb-6 h-full">
-            <p className='font-semibold mb-3'>
-              Produtos
-            </p>
-
-            <div className='flex flex-col gap-2'>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/produtos/pecas"}>Peças</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/produtos/servicos"}>Serviços</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/produtos/pneus"}>Pneus</Link>
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-baseline  flex-col mb-6 h-full">
-            <p className='font-semibold mb-3'>
-              Outros
-            </p>
-
-            <div className='flex flex-col gap-2'>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/#contato"}>Fale conosco</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"/#unidades"}>Nossas Unidades</Link>
-              </span>
-              <span className='flex gap-2 hover:text-gray-400 hover:-translate-y-0.5 transition-all'>
-                <Link href={"https://apps.somosempilhadeiras.com"}>Área do Colaborador</Link>
-              </span>
-            </div>
-          </div>
+        {/* RODAPÉ FINAL */}
+        <div className="mt-12 pt-6 border-t border-gray-700/30 text-center">
+          <p className="text-sm">
+            © 2025 Somos Empilhadeiras
+          </p>
         </div>
-      </div>
-      <div className='flex flex-col container items-center'>
-        {/* Linha Divisória */}
-        <div className="w-full h-px bg-gray-700/30 mb-8 max-w-"></div>
 
-        {/* Copyright */}
-        <p className="text-sm /80">
-          © 2025 Somos Empilhadeiras
-        </p>
       </div>
     </footer>
   );

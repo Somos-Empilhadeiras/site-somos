@@ -1,151 +1,138 @@
-import {
-    Info, MessageCircle, ChevronRight, 
-    Zap, Weight, Settings, Calendar, Tractor
-} from 'lucide-react';
 import { Empilhadeira } from '@/types';
-
+import {
+  Settings,
+  Calendar,
+  Weight,
+  Truck,
+  Wrench,
+  Box
+} from 'lucide-react';
 
 interface ItemCardProps {
-    empilhadeira: Empilhadeira;
-    onOpenModal: (empilhadeira: Empilhadeira) => void;
-    onWhatsApp: (empilhadeira: Empilhadeira) => void;
+  empilhadeira: Empilhadeira;
+  onOpenModal: (item: Empilhadeira) => void;
+  onWhatsApp: (item: Empilhadeira) => void;
 }
 
-export default function ItemCard({ empilhadeira: e, onOpenModal, onWhatsApp }: ItemCardProps) {
-    
-    // Formatação de Preço
-    const priceFormatted = e.price > 0 
-        ? e.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) 
-        : "Consulte";
+export default function ItemCard({
+  empilhadeira,
+  onOpenModal,
+  onWhatsApp
+}: ItemCardProps) {
 
-    return (
-        <div className="group bg-white rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 overflow-hidden flex flex-col h-full">
-            
-            {/* --- 1. ÁREA DA IMAGEM --- */}
-            <div className="h-64 bg-slate-50 relative flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-linear-to-t from-slate-100 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                
-                <img
-                    src={e.imageUrl}
-                    alt={e.model}
-                    className="w-full object-fill p-8 transition-transform duration-700 group-hover:scale-110"
-                />
+  const titulo = empilhadeira.model
+    ? `${empilhadeira.brand} ${empilhadeira.model}`
+    : empilhadeira.name;
 
-                {/* Badges Flutuantes */}
-                <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-                    <span className="bg-[#005831] text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md uppercase tracking-wide backdrop-blur-md">
-                        {e.brand}
-                    </span>
-                    {e.year && (
-                        <span className="bg-white/90 text-slate-700 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm border border-slate-200">
-                            {e.year}
-                        </span>
-                    )}
-                </div>
+  const subtitulo =
+    empilhadeira.manufacturer ||
+    empilhadeira.brand ||
+    'Item técnico';
 
-                {/* Botão de Zoom (Hover) */}
-                <button
-                    onClick={() => onOpenModal(e)}
-                    className="absolute top-4 right-4 bg-white text-slate-400 p-2 rounded-full shadow-lg opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 hover:text-[#005831] hover:bg-yellow-400"
-                    title="Ver detalhes"
-                >
-                    <Info size={20} />
-                </button>
-            </div>
+  const image =
+    empilhadeira.imageUrl ||
+    (empilhadeira as any).image_url;
 
-            {/* --- 2. CONTEÚDO DO CARD --- */}
-            <div className="p-6 flex-1 flex flex-col">
-                
-                {/* Status de Estoque */}
-                <div className="flex items-center gap-1.5 mb-3">
-                    <span className="relative flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                    </span>
-                    <span className="text-[11px] font-bold text-green-700 uppercase tracking-wide">
-                        Em Estoque
-                    </span>
-                </div>
+  /* ===============================
+     TIPO DO ITEM (SEMÂNTICA VISUAL)
+  ================================ */
+  const itemType = empilhadeira.model
+    ? 'Equipamento'
+    : empilhadeira.capacity
+      ? 'Peça'
+      : 'Serviço';
 
-                {/* Título */}
-                <h3 className="text-lg font-extrabold text-slate-800 leading-snug mb-1 group-hover:text-[#005831] transition-colors line-clamp-1" title={e.name}>
-                    {e.name}
-                </h3>
+  const TypeIcon =
+    itemType === 'Equipamento'
+      ? Truck
+      : itemType === 'Peça'
+        ? Box
+        : Wrench;
 
-                {/* Grid de Especificações */}
-                <div className="grid grid-cols-2 gap-2 mb-auto mt-3">
-                    {e.brand && (
-                        <div className="bg-slate-50 rounded-lg p-2 flex items-center gap-2 border border-slate-100">
-                            <Tractor size={14} className="text-slate-400" />
-                            <div className="flex flex-col leading-none">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Marca</span>
-                                <span className="text-xs font-semibold text-slate-600 truncate">{e.brand}</span>
-                            </div>
-                        </div>
-                    )}
-                    {e.model && (
-                        <div className="bg-slate-50 rounded-lg p-2 flex items-center gap-2 border border-slate-100">
-                            <Settings size={14} className="text-slate-400" />
-                            <div className="flex flex-col leading-none">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Modelo</span>
-                                <span className="text-xs font-semibold text-slate-600 truncate">{e.model}</span>
-                            </div>
-                        </div>
-                    )}
-                    {e.year && (
-                        <div className="bg-slate-50 rounded-lg p-2 flex items-center gap-2 border border-slate-100">
-                            <Calendar size={14} className="text-slate-400" />
-                            <div className="flex flex-col leading-none">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Ano</span>
-                                <span className="text-xs font-semibold text-slate-600">{e.year}</span>
-                            </div>
-                        </div>
-                    )}
-                    {e.capacity && (
-                        <div className="bg-slate-50 rounded-lg p-2 flex items-center gap-2 border border-slate-100">
-                            <Weight size={14} className="text-slate-400" />
-                            <div className="flex flex-col leading-none">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Capacidade</span>
-                                <span className="text-xs font-semibold text-slate-600">{e.capacity} kg</span>
-                            </div>
-                        </div>
-                    )}
-                    {/* Se tiver voltagem, ocupa 2 colunas */}
-                    {e.voltage && (
-                        <div className="bg-slate-50 rounded-lg p-2 flex items-center gap-2 border border-slate-100 col-span-2">
-                            <Zap size={14} className="text-yellow-500" />
-                            <span className="text-xs font-semibold text-slate-600">Elétrica {e.voltage}V</span>
-                        </div>
-                    )}
-                </div>
+  return (
+    <article
+      onClick={() => onOpenModal(empilhadeira)}
+      className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow cursor-pointer flex flex-col"
+    >
 
-                {/* Divisor e Preço */}
-                <div className="border-t border-slate-100 mt-4 pt-4">
-                    <div className="mb-3">
-                         <p className="text-[10px] text-slate-400 font-bold uppercase">Investimento</p>
-                         <p className="text-xl font-black text-[#005831]">{priceFormatted}</p>
-                    </div>
+      {/* IMAGEM */}
+      <div className="relative h-56 bg-slate-100 flex items-center justify-center">
+        {image ? (
+          <img
+            src={image}
+            alt={titulo}
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <Settings size={48} className="text-slate-300" />
+        )}
 
-                    {/* Botões de Ação */}
-                    <div className="grid grid-cols-[1fr_auto] gap-2">
-                        <button
-                            onClick={() => onWhatsApp(e)}
-                            className="bg-[#005831] hover:bg-[#004626] text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-900/10 hover:-translate-y-0.5 active:translate-y-0 text-sm"
-                        >
-                            <MessageCircle size={18} />
-                            <span>Negociar</span>
-                        </button>
-                        
-                        <button
-                            onClick={() => onOpenModal(e)}
-                            className="bg-slate-100 hover:bg-slate-200 text-slate-600 p-3 rounded-xl transition-colors flex items-center justify-center"
-                            title="Ver detalhes"
-                        >
-                            <ChevronRight size={20} />
-                        </button>
-                    </div>
-                </div>
-            </div>
+        {/* Tipo do item */}
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/90 backdrop-blur px-2.5 py-1 rounded-full text-xs font-bold text-slate-700 border">
+          <TypeIcon size={12} />
+          {itemType}
         </div>
-    );
+      </div>
+
+      {/* CONTEÚDO */}
+      <div className="flex flex-col flex-1 p-5">
+
+        <h3
+          className="text-base font-bold text-slate-800 leading-snug line-clamp-2 group-hover:text-[#005831] transition-colors"
+          title={titulo}
+        >
+          {titulo}
+        </h3>
+
+        <p className="text-xs text-slate-500 mt-1 mb-3 line-clamp-1">
+          {subtitulo}
+        </p>
+
+        {/* DETALHES */}
+        <div className="flex flex-wrap gap-2 text-xs text-slate-600 mb-4">
+          {empilhadeira.year && (
+            <span className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded border">
+              <Calendar size={12} />
+              {empilhadeira.year}
+            </span>
+          )}
+
+          {empilhadeira.capacity && (
+            <span className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded border">
+              <Weight size={12} />
+              {empilhadeira.capacity}kg
+            </span>
+          )}
+        </div>
+
+        {/* FOOTER */}
+        <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+          <div>
+            <span className="block text-[10px] uppercase font-semibold text-slate-400">
+              Valor
+            </span>
+            <span className="text-lg font-extrabold text-[#005831]">
+              {empilhadeira.price > 0
+                ? empilhadeira.price.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  })
+                : 'Sob consulta'}
+            </span>
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onWhatsApp(empilhadeira);
+            }}
+            className="bg-[#005831] hover:bg-[#004626] text-white p-3 rounded-xl transition-colors shadow-md"
+            title="Solicitar orçamento"
+          >
+            <Truck size={18} />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
 }

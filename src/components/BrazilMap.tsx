@@ -1,19 +1,19 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
-import { MapPin, Calendar, Info, MousePointerClick, Building2, Timer, Pin } from 'lucide-react';
+import { MapPin, Calendar, Info, MousePointerClick, Building2, Timer, Pin, Mail, MessageCircle, Phone, User, Clock } from 'lucide-react';
 
 const GEO_URL = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson";
 
 // Importante: 'GO' é o primeiro para iniciar nele
 const ACTIVE_STATES = ['GO', 'DF', 'TO', 'BA', 'PE'];
 
-const STATE_DETAILS: Record<string, { date: string; address: string, representant: string, operation: string, mail: string, phone: string, city: string, text: string }> = {
-  'GO': { date: 'Desde 2023', address: "Av. Caiapó, 1190 - Santa Genoveva, Goiânia - GO, 74672-400", representant: "Gustavo Teles", operation: "07:00 às 17:00", mail: "comercial@somosempilhadeiras.com.br", phone: "62 9 9183-4188", city: "Goiânia", text: 'Nossa casa, onde tudo começou. Sede administrativa e operacional.' },
-  'DF': { date: 'Desde 2024', address: "SCIA - Lote, Brasília - DF", representant: "Maike Jhonny", operation: "07:00 às 17:00", mail: "maike@somosempilhadeiras.com.br", phone: "62 9 9183-4188", city: "Brasília", text: 'Atendendo o coração do Brasil com agilidade e precisão logística.' },
-  'TO': { date: 'Desde 2024', address: "", representant: "", operation: "", mail: "", phone: "", city: "Palmas", text: 'Expandindo horizontes no norte, apoiando o agronegócio.' },
-  'BA': { date: 'Desde 2024', address: "Av. Luís Eduardo Magalhães, QD 02 - LT 26  - Bairro Vereda Tropical, Luís Eduardo Magalhães - BA, 47862-090", representant: "Cristiane", operation: "08:00 às 18:00", mail: "cristiane@somosempilhadeiras.com.br", phone: "62 9 9183-4188", city: "Luís Eduardo Magalhães", text: 'Energia e força para o nordeste, com frota especializada.' },
-  'PE': { date: 'Desde 2025', address: "", representant: "", operation: "07:00 às 17:00", mail: "alan@somosempilhadeiras.com.br", phone: "", city: "Recife", text: "" },
+const STATE_DETAILS: Record<string, { date: string; address: string, representant: string, operation: string, mail: string, phone: string, city: string, text: string, wpp: string}> = {
+  'GO': { date: 'Desde 2023', address: "Av. Caiapó, 1190 - Santa Genoveva, Goiânia - GO, 74672-400", representant: "Gustavo Teles", operation: "07:00 às 17:00", mail: "comercial@somosempilhadeiras.com.br", phone: "62 9 9183-4188", city: "Goiânia", wpp: '5562991834188', text: 'Nossa casa, onde tudo começou. Sede administrativa e operacional.' },
+  'DF': { date: 'Desde 2024', address: "SCIA - Lote, Brasília - DF", representant: "Maike Jhonny", operation: "07:00 às 17:00", mail: "maike@somosempilhadeiras.com.br", phone: "62 9 9183-4188", wpp:"5562991834188", city: "Brasília", text: 'Atendendo o coração do Brasil com agilidade e precisão logística.' },
+  'TO': { date: 'Desde 2024', address: "", representant: "", operation: "", mail: "", phone: "", wpp: "", city: "Palmas", text: 'Expandindo horizontes no norte, apoiando o agronegócio.' },
+  'BA': { date: 'Desde 2024', address: "Av. Luís Eduardo Magalhães, QD 02 - LT 26  - Bairro Vereda Tropical, Luís Eduardo Magalhães - BA, 47862-090", representant: "Cristiane", operation: "08:00 às 18:00", mail: "cristiane@somosempilhadeiras.com.br", phone: "62 9 9183-4188", wpp: "5562991834188", city: "Luís Eduardo Magalhães", text: 'Energia e força para o nordeste, com frota especializada.' },
+  'PE': { date: 'Desde 2025', address: "Recife", representant: "Alan Santana", operation: "07:00 às 17:00", mail: "alan@somosempilhadeiras.com.br", phone: "81 9 9258-6532", wpp: '5581992586532', city: "Recife", text: "" },
 };
 
 interface GeoProps {
@@ -35,6 +35,7 @@ interface PopupData {
   representant: string;
   operation: string;
   message: string;
+  wpp: string,
   isActive: boolean;
 }
 
@@ -57,7 +58,6 @@ export default function BrazilMap() {
     const isActive = ACTIVE_STATES.includes(sigla);
     const details = STATE_DETAILS[sigla];
 
-    // Se não tivermos o nome do estado (vinda do automático), usamos a sigla ou um mapa auxiliar
     const title = stateName || sigla;
 
     if (isActive) {
@@ -72,6 +72,7 @@ export default function BrazilMap() {
         date: details?.date || 'Presente',
         city: details?.city || "",
         message: details?.text || 'Atuando com excelência.',
+        wpp: details?.wpp || "",
         isActive: true
       };
     } else {
@@ -84,6 +85,7 @@ export default function BrazilMap() {
         mail: details.mail,
         phone: details.phone,
         message: 'Ainda não possuímos filial física neste estado, mas entre em contato para projetos especiais.',
+        wpp: details.wpp,
         isActive: false
       };
     }
@@ -147,15 +149,34 @@ export default function BrazilMap() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row w-full max-w-full mx-auto gap-6 items-stretch">
+    <div className="
+  flex flex-col lg:flex-row
+  w-full
+  max-w-7xl
+  mx-auto
+  gap-6
+  items-stretch
+  min-h-[600px]
+  h-[75vh]
+  max-h-[800px]
+">
 
       {/* LADO ESQUERDO: MAPA */}
-      <div className="flex-1  rounded-2xl overflow-hidden relative border border-slate-200 shadow-inner min-h-[400px] lg:h-[700px]">
+      <div className="
+  relative
+  flex-1
+  bg-white
+  rounded-2xl
+  border border-slate-200
+  shadow-inner
+  overflow-hidden
+">
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{ scale: 830, center: [-52, -15] }}
           className="w-full h-full"
         >
+
           <Geographies geography={GEO_URL}>
             {({ geographies }: { geographies: GeoProps[] }) =>
               geographies.map((geo) => {
@@ -203,158 +224,142 @@ export default function BrazilMap() {
       </div>
 
       {/* LADO DIREITO: PAINEL DE INFORMAÇÕES */}
-      <div className="w-full lg:w-2/6 bg-white rounded-2xl border border-slate-200 shadow-lg p-8 flex flex-col justify-center transition-all duration-300">
-        {displayData ? (
-          // Usando key=sigla para forçar a animação de entrada a cada troca
-          <div key={displayData.sigla} className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6">
+      <div className={`w-full lg:w-2/6 bg-white rounded-2xl border border-slate-200 shadow-lg p-6 flex flex-col h-full overflow-hidden`}>
+        <div className="flex-1 overflow-y-auto pr-2">
 
-            {/* Cabeçalho */}
-            <div className="border-b border-slate-100 pb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className={`text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide transition-colors ${displayData.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                  {displayData.isActive && displayData.sigla === "GO" ? 'Matriz' : displayData.isActive && displayData.sigla !== "GO" ? 'Filial' : 'Indisponivel'}
-                </span>
-                <span className="text-4xl font-black text-slate-100">{displayData.sigla}</span>
-              </div>
-              <h2 className="text-3xl font-bold text-slate-800 leading-tight">{displayData.title}</h2>
-            </div>
+          {displayData ? (
+            <div
+              key={displayData.sigla}
+              className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6"
+            >
 
-            {/* Conteúdo */}
-            {displayData.isActive ? (
-              <div className="space-y-3">
-
-                {/* Endereço de Atuação */}
-                <div className="flex gap-2 items-start text-slate-800">
-                  <MapPin className='w-5 h-5 text-yellow-500 shrink-0' />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900 mb-0.5">
-                      Endereço
-                    </p>
-
-                    <span className=" text-sm ">
-                      {displayData.address}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Horarios de funcionamento */}
-                <div className="flex gap-2 items-start text-slate-800">
-                  <MapPin className='w-5 h-5 text-yellow-500 mt-0.5 shrink-0' />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900 mb-0.5">
-                      Horários de funcionamento
-                    </p>
-
-                    <span className=" text-sm">
-                      {displayData.operation}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div className="flex gap-2 items-start text-slate-800">
-                  <MapPin className='w-5 h-5 text-yellow-500 mt-0.5 shrink-0' />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900 mb-0.5">
-                      E-mail
-                    </p>
-
-                    <span className=" text-sm">
-                      {displayData.mail}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Telefone */}
-                <div className="flex gap-2 items-start text-slate-800">
-                  <MapPin className='w-5 h-5 text-yellow-500 mt-0.5 shrink-0' />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900 mb-0.5">
-                      Telefone
-                    </p>
-
-                    <span className=" text-sm">
-                      {displayData.phone}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Cidades de Atuação */}
-                {displayData.city && (
-                  <div className="flex items-start gap-2 text-slate-800">
-                    <Building2 className="w-5 h-5 text-yellow-500 mt-0.5 shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-800 mb-0.5">Locais de Atuação</p>
-                      <div className="flex flex-wrap gap-2">
-                        <span className={` bg-green-700 text-white border-slate-800  text-xs px-2 py-1 rounded border`}>
-                          {displayData.city}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Mensagem / Descrição */}
-                <div className="flex items-start gap-3 text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  <Info className="w-5 h-5 text-yellow-500 mt-0.5 shrink-0" />
-                  <p className="text-sm italic leading-relaxed">{displayData.message}</p>
-                </div>
-
-
-                {/* Timer Visual (Opcional, mostra barra de progresso se auto) */}
-                {isAutoPlay && (
-                  <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden mt-4">
-                    <div className="bg-green-800 h-full w-full animate-[progress_4s_linear_infinite] origin-left"></div>
-                  </div>
-                )}
-
-                {/* Botões Contato e Frota */}
-                <div className="w-full flex items-center justify-around">
-                  <a href='/empilhadeiras' className="w-48 font-semibold text-center bg-green-900 text-white py-3 rounded-lg font-sans hover:bg-slate-800 transition shadow-lg shadow-slate-200">
-                    Ver Frota
-                  </a>
-                  <button
-                    onClick={() => {
-                      const contactSection = document.getElementById("contato");
-                      contactSection?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className="w-48 px-3 font-semibold text-center bg-green-900 text-white py-3 rounded-lg font-sans hover:bg-slate-800 transition shadow-lg shadow-slate-200"
+              {/* Cabeçalho */}
+              <div className="border-b border-slate-100 pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span
+                    className={`text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide transition-colors ${displayData.isActive
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-slate-100 text-slate-500'
+                      }`}
                   >
-                    Entrar em contato
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* Estado Inativo */
-              <div className="text-center py-6 space-y-3">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 mb-4">
-                  <MapPin size={32} />
-                </div>
-                <p className="text-slate-600">{displayData.message}</p>
+                    {displayData.isActive && displayData.sigla === 'GO'
+                      ? 'Matriz'
+                      : displayData.isActive
+                        ? 'Filial'
+                        : 'Indisponível'}
+                  </span>
 
-                {!isAutoPlay && (
-                  <p className="text-xs text-slate-400 animate-pulse mt-4">
-                    Retornando ao modo apresentação em breve...
-                  </p>
-                )}
+                  <span className="text-4xl font-black text-slate-100">
+                    {displayData.sigla}
+                  </span>
+                </div>
+
+                <h2 className="text-3xl font-bold text-slate-800 leading-tight">
+                  {displayData.title}
+                </h2>
               </div>
-            )}
-          </div>
-        ) : (
-          /* Card de Carregamento Inicial */
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full"></div>
-          </div>
-        )}
+
+              {/* Conteúdo */}
+              {displayData.isActive ? (
+                <div className="space-y-3">
+                  <div className="space-y-4 pt-2">
+
+                    {/* Endereço */}
+                    {displayData.address && (
+                      <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                        <div className="mt-1 text-[#005831]">
+                          <MapPin size={18} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-500 uppercase">Endereço</p>
+                          <p className="text-sm text-slate-700 leading-relaxed">{displayData.address}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Representante (Antigo 'manager', agora 'representant') */}
+                    {displayData.representant && (
+                      <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                        <div className="text-[#005831]">
+                          <User size={18} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-500 uppercase">Responsável</p>
+                          <p className="text-sm font-bold text-slate-800">{displayData.representant}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Horário de Operação (Novo - já que você tem esse dado) */}
+                    {displayData.operation && (
+                      <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                        <div className="text-[#005831]">
+                          <Clock size={18} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-500 uppercase">Funcionamento</p>
+                          <p className="text-sm font-bold text-slate-800">{displayData.operation}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Contatos */}
+                    <div className="grid grid-cols-1 gap-3 mt-4">
+                      {displayData.phone && (
+                        <a
+                          href={`https://wa.me/${displayData.wpp.replace(/\D/g, '')}`}
+                          target='_blank'
+                          className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:border-[#005831] hover:bg-green-50 transition-colors group"
+                        >
+                          <Phone size={18} className="text-slate-400 group-hover:text-[#005831]" />
+                          <div>
+                            <p className="text-xs font-bold text-slate-400 uppercase">Telefone</p>
+                            <p className="text-sm font-bold text-slate-700 group-hover:text-[#005831]">{displayData.phone}</p>
+                          </div>
+                        </a>
+                      )}
+
+                      {/* E-mail (Antigo 'email', agora 'mail') */}
+                      {displayData.mail && (
+                        <a
+                          href={`mailto:${displayData.mail}`}
+                          className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:border-[#005831] hover:bg-green-50 transition-colors group"
+                        >
+                          <Mail size={18} className="text-slate-400 group-hover:text-[#005831]" />
+                          <div>
+                            <p className="text-xs font-bold text-slate-400 uppercase">E-mail</p>
+                            <p className="text-sm font-medium text-slate-700 group-hover:text-[#005831] truncate">{displayData.mail}</p>
+                          </div>
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Botão de Ação */}
+                    <div className="pt-4 mt-auto">
+                      <a
+                        href={`https://wa.me/${displayData.wpp}?text=Olá%20gostaria%20de%20mais%20informações`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full bg-[#005831] hover:bg-[#004626] text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-green-900/20 transition-all flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle size={20} />
+                        Falar com essa Unidade
+                      </a>
+                    </div>
+                  </div>                </div>
+              ) : (
+                <div className="text-center py-6 space-y-3">
+                  <p className="text-slate-600">{displayData.message}</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full" />
+            </div>
+          )}
+        </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes progress {
-          0% { transform: scaleX(0); }
-          100% { transform: scaleX(1); }
-        }
-      `}</style>
-
     </div>
   );
 }

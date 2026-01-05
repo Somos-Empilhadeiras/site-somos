@@ -1,17 +1,17 @@
 import { Info, MessageCircle, X, Settings, Weight, Zap, Calendar, Tractor, CheckCircle2 } from "lucide-react";
-import { Product } from '@/types';
+import { Empilhadeira } from '@/types';
 
 interface ModalItemProps {
-    product: Product;
+    empilhadeira: Empilhadeira;
     onClose: () => void; // Nome mais genérico e claro
-    onWhatsApp: (product: Product) => void;
+    onWhatsApp: (empilhadeira: Empilhadeira) => void;
 }
 
-export default function ModalItem({ product: p, onClose, onWhatsApp }: ModalItemProps) {
+export default function ModalItem({ empilhadeira: e, onClose, onWhatsApp }: ModalItemProps) {
     
     // Formatação de Preço
-    const priceFormatted = p.price > 0 
-        ? p.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) 
+    const priceFormatted = e.price > 0 
+        ? e.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) 
         : "Sob Consulta";
 
     return (
@@ -28,8 +28,8 @@ export default function ModalItem({ product: p, onClose, onWhatsApp }: ModalItem
             {/* Lado Esquerdo (Imagem) */}
             <div className="w-full md:w-1/2 bg-slate-50 flex items-center justify-center relative p-8 border-r border-slate-100">
                 <img
-                    src={p.imageUrl}
-                    alt={p.model}
+                    src={e.image_url}
+                    alt={e.model}
                     className="w-full h-full object-contain max-h-[400px] drop-shadow-xl"
                 />
             </div>
@@ -41,12 +41,12 @@ export default function ModalItem({ product: p, onClose, onWhatsApp }: ModalItem
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <span className="inline-block bg-[#005831] text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
-                            {p.brand || 'Produto'}
+                            {e.brand || 'Produto'}
                         </span>
                         <h2 className="text-3xl font-black text-slate-900 leading-tight">
-                            {p.name}
+                            {e.name}
                         </h2>
-                        <p className="text-slate-400 font-bold mt-1">Ref: {p.model}</p>
+                        <p className="text-slate-400 font-bold mt-1">Ref: {e.model}</p>
                     </div>
                     {/* Botão Fechar Desktop */}
                     <button
@@ -57,40 +57,32 @@ export default function ModalItem({ product: p, onClose, onWhatsApp }: ModalItem
                     </button>
                 </div>
 
-                {/* Preço */}
-                <div className="mb-6 p-4 bg-green-50 rounded-xl border border-green-100">
-                    <p className="text-xs text-green-700 font-bold uppercase mb-1">Valor de Investimento</p>
-                    <p className="text-3xl font-black text-[#005831]">
-                        {priceFormatted}
-                    </p>
-                </div>
-
                 {/* Specs (Só mostra se tiver dados) */}
                 <div className="space-y-4 mb-6">
-                    {(p.year || p.engine || p.capacity || p.voltage) && (
+                    {(e.year || e.engine || e.capacity || e.voltage) && (
                         <div className="grid grid-cols-2 gap-4 border-b border-slate-100 pb-4">
-                            {p.year && (
+                            {e.year && (
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-slate-400 font-bold uppercase">Ano</span>
-                                    <span className="font-bold text-slate-700 flex items-center gap-1"><Calendar size={14}/> {p.year}</span>
+                                    <span className="font-bold text-slate-700 flex items-center gap-1"><Calendar size={14}/> {e.year}</span>
                                 </div>
                             )}
-                            {p.engine && (
+                            {e.engine && (
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-slate-400 font-bold uppercase">Motor</span>
-                                    <span className="font-bold text-slate-700 flex items-center gap-1"><Settings size={14}/> {p.engine}</span>
+                                    <span className="font-bold text-slate-700 flex items-center gap-1"><Settings size={14}/> {e.engine}</span>
                                 </div>
                             )}
-                            {p.capacity && (
+                            {e.capacity && (
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-slate-400 font-bold uppercase">Capacidade</span>
-                                    <span className="font-bold text-slate-700 flex items-center gap-1"><Weight size={14}/> {p.capacity} kg</span>
+                                    <span className="font-bold text-slate-700 flex items-center gap-1"><Weight size={14}/> {e.capacity} kg</span>
                                 </div>
                             )}
-                            {p.voltage && (
+                            {e.voltage && (
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-slate-400 font-bold uppercase">Voltagem</span>
-                                    <span className="font-bold text-slate-700 flex items-center gap-1"><Zap size={14} className="text-yellow-500"/> {p.voltage}V</span>
+                                    <span className="font-bold text-slate-700 flex items-center gap-1"><Zap size={14} className="text-yellow-500"/> {e.voltage}V</span>
                                 </div>
                             )}
                         </div>
@@ -102,7 +94,7 @@ export default function ModalItem({ product: p, onClose, onWhatsApp }: ModalItem
                             <Info size={16} className="text-blue-500" /> Detalhes
                         </h4>
                         <p className="text-slate-600 leading-relaxed text-sm">
-                            {p.description}
+                            {e.description}
                         </p>
                     </div>
                 </div>
@@ -110,7 +102,7 @@ export default function ModalItem({ product: p, onClose, onWhatsApp }: ModalItem
                 {/* Footer CTA */}
                 <div className="mt-auto pt-4">
                     <button
-                        onClick={() => onWhatsApp(p)}
+                        onClick={() => onWhatsApp(e)}
                         className="w-full bg-[#005831] hover:bg-[#004626] text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-green-900/20 hover:-translate-y-1"
                     >
                         <MessageCircle size={24} />

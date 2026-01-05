@@ -1,90 +1,88 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/postgres';
 
-// --- GET: Listar todas as empilhadeiras ---
+// --- GET: Listar banners ---
 export async function GET(req: Request) {
-  console.log("API: Recebendo pedido GET em /api/empilhadeiras"); // LOG DE DEBUG
-
   try {
-    // 1. Busca no Banco de Dados
-    // O 'sql' do postgres.js retorna um Array (RowList) por padrão.
-    const empilhadeiras = await sql`
-      SELECT * FROM empilhadeiras 
+    const banners = await sql`
+      SELECT * FROM banners 
       ORDER BY created_at DESC
     `;
-
-    console.log(`API: Sucesso! Encontrados ${empilhadeiras.length} itens.`); // LOG DE DEBUG
-
-    // 2. Retorna o Array JSON
-    return NextResponse.json(empilhadeiras);
-
+    return NextResponse.json(banners);
   } catch (error) {
-    console.error('API: Erro Crítico ao buscar empilhadeiras:', error);
-    return NextResponse.json({ error: 'Erro interno ao buscar dados' }, { status: 500 });
+    console.error('API: Erro ao buscar banners:', error);
+    return NextResponse.json({ error: 'Erro ao buscar banners' }, { status: 500 });
   }
 }
 
-// --- POST: Criar nova empilhadeira ---
+// --- POST: Criar banner ---
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
-    // Mapeamento manual para snake_case (Padrão SQL)
-    const newItem = {
+
+    // Mapeamento EXATO para sua tabela 'banners'
+    const newBanner = {
       name: body.name,
-      brand: body.brand,
-      model: body.model,
-      year: body.year,
-      price: body.price,
-      capacity: body.capacity,
-      engine: body.engine,
-      voltage: body.voltage,
+      ids: body.ids || [], // Postgres.js converte array JS p/ array Text[] automaticamente
+      is_active: body.isActive,
+      layout: body.layout,
+      title: body.title,
       description: body.description,
-      image_url: body.imageUrl || '/placeholder.jpg',
+      image_url: body.imageUrl,
+      cta_text: body.ctaText,
+      cta_link: body.ctaLink,
+      carousel_items: sql.json(body.carouselItems || []), // Converte para JSONB
+      bg_color: body.bgColor,
+      text_color: body.textColor,
+      btn_color: body.btnColor,         // Adicionado conforme sua tabela
+      btn_text_color: body.btnTextColor, // Adicionado conforme sua tabela
+      image_position: body.imagePosition
     };
 
     const result = await sql`
-      INSERT INTO empilhadeiras ${sql(newItem)}
+      INSERT INTO banners ${sql(newBanner)}
       RETURNING *
     `;
 
     return NextResponse.json(result[0], { status: 201 });
   } catch (error) {
-    console.error('API: Erro ao criar:', error);
-    return NextResponse.json({ error: 'Erro ao criar registro' }, { status: 500 });
+    console.error('API: Erro ao criar banner:', error);
+    return NextResponse.json({ error: 'Erro ao criar banner' }, { status: 500 });
   }
 }
 
-// --- PUT: Atualizar empilhadeira ---
+// --- PUT: Atualizar banner ---
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
-    // Aceita tanto 'id' quanto '_id' para compatibilidade
-    const targetId = body.id || body._id; 
+    const targetId = body.id;
 
-    if (!targetId) {
-      return NextResponse.json({ error: 'ID é obrigatório' }, { status: 400 });
-    }
+    if (!targetId) return NextResponse.json({ error: 'ID obrigatório' }, { status: 400 });
 
     const updateData = {
       name: body.name,
-      brand: body.brand,
-      model: body.model,
-      year: body.year,
-      price: body.price,
-      capacity: body.capacity,
-      engine: body.engine,
-      voltage: body.voltage,
+      ids: body.ids || [],
+      is_active: body.isActive,
+      layout: body.layout,
+      title: body.title,
       description: body.description,
       image_url: body.imageUrl,
-      updated_at: new Date() // Atualiza a data
+      cta_text: body.ctaText,
+      cta_link: body.ctaLink,
+      carousel_items: sql.json(body.carouselItems || []),
+      bg_color: body.bgColor,
+      text_color: body.textColor,
+      btn_color: body.btnColor,
+      btn_text_color: body.btnTextColor,
+      image_position: body.imagePosition,
+      updated_at: new Date()
     };
 
-    // Remove campos undefined para não bugar o banco
+    // Remove campos undefined
     Object.keys(updateData).forEach(key => (updateData as any)[key] === undefined && delete (updateData as any)[key]);
 
     const result = await sql`
-      UPDATE empilhadeiras
+      UPDATE banners
       SET ${sql(updateData)}
       WHERE id = ${targetId}
       RETURNING *
@@ -92,12 +90,12 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(result[0]);
   } catch (error) {
-    console.error('API: Erro ao atualizar:', error);
-    return NextResponse.json({ error: 'Erro ao atualizar' }, { status: 500 });
+    console.error('API: Erro ao atualizar banner:', error);
+    return NextResponse.json({ error: 'Erro ao atualizar banner' }, { status: 500 });
   }
 }
 
-// --- DELETE: Remover empilhadeira ---
+// --- DELETE: Remover banner ---
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -105,11 +103,11 @@ export async function DELETE(req: Request) {
 
     if (!id) return NextResponse.json({ error: 'ID necessário' }, { status: 400 });
 
-    await sql`DELETE FROM empilhadeiras WHERE id = ${id}`;
+    await sql`DELETE FROM banners WHERE id = ${id}`;
 
-    return NextResponse.json({ message: 'Deletado com sucesso' });
+    return NextResponse.json({ message: 'Banner deletado' });
   } catch (error) {
     console.error('API: Erro ao deletar:', error);
-    return NextResponse.json({ error: 'Erro ao deletar' }, { status: 500 });
+    return NextResponse.json({ error: 'Erro ao deletar banner' }, { status: 500 });
   }
 }

@@ -88,7 +88,7 @@ export default function Home() {
       <DynamicBanner id="home-sessao-carrossel" className="z-50" />
 
       {/* 2. SESSÃO DISTRIBUIDOR HELI (Movida para cima -> Autoridade) */}
-      <section className="py-24 bg-white relative overflow-hidden">
+      <section className="py-12 md:py-16 lg:py-24 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
             <div className="lg:w-1/2 relative group">
@@ -148,7 +148,7 @@ export default function Home() {
       <DynamicBanner id="home-sessao-heli" className="z-40" />
 
       {/* 3. SESSÃO DE PILARES (Suporte de Qualidade) */}
-      <section className="py-24 bg-slate-50 border-t border-slate-200">
+      <section className="py-12 md:py-16 lg:py-24 bg-slate-50 border-t border-slate-200">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Por que somos a escolha certa?</h2>
@@ -180,7 +180,7 @@ export default function Home() {
       <DynamicBanner id="home-sessao-pilares" className="z-40" />
 
       {/* 4. SESSÃO DE DESTAQUE DA FROTA (Fundo Branco - Produto) */}
-      <section className="py-24 bg-white relative">
+      <section className="py-12 md:py-16 lg:py-24 bg-white relative">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="lg:w-1/2 space-y-8 order-2 lg:order-1">
@@ -223,7 +223,7 @@ export default function Home() {
       <DynamicBanner id="home-sessao-frotas" className="z-40" />
 
       {/* 5. LOCAÇÃO E VENDA (Fundo Verde - O "Baralho" Visual) */}
-      <section className="relative bg-[#005831] overflow-hidden">
+      <section className="py-12 md:py-16 lg:py-24 relative bg-[#005831] overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat opacity-20 mix-blend-overlay"></div>
           <div className="absolute inset-0 bg-linear-to-r from-[#005831] via-[#005831]/95 to-[#005831]/40"></div>
@@ -312,14 +312,20 @@ export default function Home() {
       <DynamicBanner id="home-sessao-locacao" className="z-40" />
 
       {/* 6. MAPA SECTION (Fundo Cinza - Separação Visual) */}
-      <section id='unidades' className="py-24 bg-slate-50 border-t border-slate-200">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Onde Atuamos</h2>
+      <section
+        id="unidades"
+        className="min-h-[600px] h-[75vh] max-h-[8050px] bg-slate-50 border-t border-slate-200 flex items-center"
+      >
+        <div className="container mx-auto px-4 py-12 w-full">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              Onde Atuamos
+            </h2>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg">
               Presentes estrategicamente nas principais rotas logísticas do país.
             </p>
           </div>
+
           <BrazilMap />
         </div>
       </section>
@@ -328,7 +334,7 @@ export default function Home() {
       <DynamicBanner id="home-sessao-mapa" className="z-40" />
 
       {/* 7. CONTATO (Fundo Branco Final) */}
-      <section id='contato' className="py-24 bg-white border-t border-slate-100">
+      <section id='contato' className="py-12 md:py-16 lg:py-24 bg-white border-t border-slate-100">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-[#005831] mb-4">Entre em Contato</h2>

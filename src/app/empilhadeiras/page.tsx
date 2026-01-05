@@ -1,218 +1,243 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-    X, MessageCircle, Info, Search, Filter, ChevronRight,
-    Zap, Weight, Settings, CheckCircle2,
-    Calendar,
-    Tractor
+  Search,
+  Truck,
+  Package,
+  ArrowDownCircle,
+  X
 } from 'lucide-react';
-import Link from 'next/link';
+
 import DynamicBanner from '@/components/DynamicBanner';
 import ItemCard from '@/components/ItemCard';
-import { Product } from '@/types';
 import ModalItem from '@/components/ModalItem';
+import { Empilhadeira } from '@/types';
+
+/* ===============================
+   CONFIGURAÇÕES DO CATÁLOGO
+================================ */
+const INITIAL_LIMIT = 4;
+const LOAD_MORE_COUNT = 8;
+const SEARCH_DEBOUNCE = 500;
 
 export default function Catalog() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<Empilhadeira[]>([]);
+  const [selectedItem, setSelectedItem] = useState<Empilhadeira | null>(null);
 
-    // --- NOVO: Estado para a busca ---
-    const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [offset, setOffset] = useState(0);
 
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
+  /* ===============================
+     FETCH DE DADOS (COM ABORT)
+  ================================ */
+  const fetchEmpilhadeiras = useCallback(
+    async (
+      isLoadMore = false,
+      search = searchTerm,
+      currentOffset = 0,
+      signal?: AbortSignal
+    ) => {
+      try {
+        isLoadMore ? setLoadingMore(true) : setLoading(true);
 
-    useEffect(() => {
-        async function fetchProducts() {
-            try {
-                const response = await fetch('/api/products');
-                if (!response.ok) {
-                    throw new Error('Falha ao buscar produtos');
-                }
-                const data = await response.json();
-                setProducts(data);
-            } catch (error) {
-                console.error("Erro ao carregar catálogo:", error);
-            } finally {
-                setLoading(false);
-            }
+        const limit = isLoadMore ? LOAD_MORE_COUNT : INITIAL_LIMIT;
+
+        const params = new URLSearchParams({
+          limit: String(limit),
+          offset: String(currentOffset),
+          search
+        });
+
+        const response = await fetch(`/api/empilhadeiras?${params}`, { signal });
+        if (!response.ok) throw new Error('Erro ao buscar empilhadeiras');
+
+        const data: Empilhadeira[] = await response.json();
+
+        if (isLoadMore) {
+          setItems(prev => [...prev, ...data]);
+          setOffset(prev => prev + limit);
+          if (data.length < limit) setHasMore(false);
+        } else {
+          setItems(data);
+          setOffset(limit);
+          setHasMore(data.length >= limit);
         }
-        fetchProducts();
-    }, []);
-
-    // --- LÓGICA DE FILTRAGEM ---
-    // Filtra os produtos sempre que o searchTerm ou a lista de produtos mudar
-    const filteredProducts = products.filter(product => {
-        const term = searchTerm.toLowerCase();
-        return (
-            product.name.toLowerCase().includes(term) ||
-            product.brand.toLowerCase().includes(term) ||
-            product.model.toLowerCase().includes(term)
-        );
-    });
-
-    const handleWhatsAppRedirect = (p: Product) => {
-        const phoneNumber = "5562991834188";
-
-        // Lógica para formatar o preço ou mostrar "Sob Consulta"
-        const priceFormatted = p.price > 0
-            ? p.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-            : "Sob Consulta";
-
-        const productYear = p.year || "N/A";
-
-        // Definição de Emojis para ficar visualmente organizado
-        const emojiTruck = '\uD83D\uDE9C';   // 🚜 (Trator/Máquina fica melhor que caixa)
-        const emojiCalendar = '\uD83D\uDCC5'; // 📅
-        const emojiGear = '\u2699';          // ⚙️ (Para Motor)
-        const emojiWeight = '\u2696';        // ⚖️ (Para Capacidade)
-        const emojiBolt = '\u26A1';          // ⚡ (Para Voltagem)
-
-        const productLink = `${window.location.origin}/catalogo/${p._id}`;
-
-        // Construção da mensagem linha a linha
-        let message = `*SOLICITAÇÃO DE ORÇAMENTO*\n\n`;
-        message += `${emojiTruck} *Modelo:* ${p.brand} ${p.model}\n`;
-        message += `${emojiCalendar} *Ano:* ${productYear}\n`;
-        // Adiciona Motor e Capacidade se existirem
-        if (p.engine) message += `${emojiGear} *Motor:* ${p.engine}\n`;
-        if (p.capacity) message += `${emojiWeight} *Capacidade:* ${p.capacity}\n`;
-
-        // Adiciona Voltagem apenas se tiver (para não ficar vazio em máquinas a combustão)
-        if (p.voltage) {
-            message += `${emojiBolt} *Voltagem:* ${p.voltage}\n`;
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error(err.message);
         }
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [searchTerm]
+  );
 
-        message += `\nOlá, tenho interesse neste item:\n${productLink}`;
+  /* ===============================
+     CARGA INICIAL
+  ================================ */
+  useEffect(() => {
+    fetchEmpilhadeiras();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-        const url = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+  /* ===============================
+     BUSCA COM DEBOUNCE
+  ================================ */
+  useEffect(() => {
+    const controller = new AbortController();
 
-        window.open(url, '_blank');
+    const timeout = setTimeout(() => {
+      fetchEmpilhadeiras(false, searchTerm, 0, controller.signal);
+    }, SEARCH_DEBOUNCE);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
     };
+  }, [searchTerm, fetchEmpilhadeiras]);
 
-    return (
-        <main className="min-h-screen bg-slate-50 flex flex-col">
+  /* ===============================
+     HANDLERS
+  ================================ */
+  const handleLoadMore = () => {
+    fetchEmpilhadeiras(true, searchTerm, offset);
+  };
 
-            {/* BANNER ID NUMERO UM */}
-            <DynamicBanner id="catalogo-topo" className="sticky top-[5.2rem] z-60" />
+  const handleWhatsAppRedirect = (item: Empilhadeira) => {
+    const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE!;
+    const link = `${window.location.origin}/catalogo?id=${item.id}`;
 
-            {/* 1. HERO SECTION DO CATÁLOGO */}
-            <div className="bg-[#005831] text-white py-16 lg:py-20 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl -mr-20 -mt-20"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-yellow-400 opacity-10 rounded-full blur-3xl -ml-10 -mb-10"></div>
+    let message = `*SOLICITAÇÃO DE ORÇAMENTO*\n\n`;
+    message += `🚜 *Modelo:* ${item.brand} ${item.model}\n`;
+    if (item.year) message += `📅 *Ano:* ${item.year}\n`;
+    if (item.capacity) message += `⚙️ *Capacidade:* ${item.capacity}kg\n`;
+    message += `\n${link}`;
 
-                <div className="container mx-auto px-4 relative z-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="max-w-2xl">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="px-3 py-1 bg-yellow-400 text-[#005831] text-xs font-bold rounded-full uppercase tracking-wider">Estoque Atualizado</span>
-                            </div>
-                            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-                                Encontre a Máquina Ideal para sua Operação
-                            </h1>
-                            <p className="text-slate-200 text-lg mb-8">
-                                Explore nossa frota de empilhadeiras novas e seminovas. Equipamentos revisados, com garantia e prontos para entrega imediata.
-                            </p>
-
-                            {/* BARRA DE PESQUISA FUNCIONAL */}
-                            <div className="flex flex-col sm:flex-row gap-4 bg-white/10 p-2 rounded-xl backdrop-blur-md border border-white/20 max-w-lg">
-                                <div className="flex-1 relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
-                                    <input
-                                        type="text"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Buscar por modelo ou marca..."
-                                        className="w-full bg-transparent border-none outline-none text-white placeholder-slate-300 pl-10 py-3"
-                                    />
-                                </div>
-                                <button className="bg-yellow-400 hover:bg-yellow-300 text-[#005831] font-bold px-6 py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
-                                    <Filter size={18} />
-                                    <span>{filteredProducts.length} Itens</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Estatísticas Rápidas */}
-                        <div className="hidden lg:flex gap-6">
-                            <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 text-center">
-                                <p className="text-3xl font-black text-yellow-400">+{products.length}</p>
-                                <p className="text-sm text-slate-300">Máquinas Disponíveis</p>
-                            </div>
-                            <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 text-center">
-                                <p className="text-3xl font-black text-yellow-400">24h</p>
-                                <p className="text-sm text-slate-300">Atendimento Rápido</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* BANNER ID NUMERO DOIS */}
-            <DynamicBanner id="catalogo-sessao-hero" className="z-40" />
-
-            {/* 2. GRADE DE PRODUTOS */}
-            <div className="flex-1 container mx-auto py-16 px-4">
-
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 space-y-4 text-slate-400">
-                        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#005831] rounded-full animate-spin"></div>
-                        <p>Carregando catálogo...</p>
-                    </div>
-                ) : (
-                    <>
-                        {/* Mensagem se a busca não retornar nada */}
-                        {filteredProducts.length === 0 ? (
-                            <div className="text-center py-20">
-                                <div className="inline-block p-6 rounded-full bg-slate-100 mb-4">
-                                    <Search size={48} className="text-slate-300" />
-                                </div>
-                                <h3 className="text-xl font-bold text-slate-700">Nenhum equipamento encontrado</h3>
-                                <p className="text-slate-500 mt-2">Tente buscar por outro termo ou marca.</p>
-                                <button
-                                    onClick={() => setSearchTerm('')}
-                                    className="mt-6 text-[#005831] font-bold hover:underline"
-                                >
-                                    Limpar busca e ver tudo
-                                </button>
-                            </div>
-                        ) : (
-
-                            <div className="flex flex-col gap-4 text-green-800 font-extrabold md:text-3xl">
-                                <h1>EMPILHADEIRAS ELÉTRICAS</h1>
-                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {/* Loop usando filteredProducts em vez de products */}
-                                    {filteredProducts.map((p) => (
-                                        <ItemCard
-                                            key={p._id}
-                                            product={p}
-                                            onOpenModal={setSelectedProduct}
-                                            onWhatsApp={handleWhatsAppRedirect}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
-
-                {/* MODAL DE DETALHES */}
-                {selectedProduct && (
-                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-100 animate-in fade-in duration-300">
-                        {/* Chama o componente ModalItem aqui dentro */}
-                        <ModalItem
-                            product={selectedProduct}
-                            onClose={() => setSelectedProduct(null)}
-                            onWhatsApp={handleWhatsAppRedirect}
-                        />
-                    </div>
-                )}
-            </div>
-
-            {/* BANNER ID NUMERO TRES */}
-            <DynamicBanner id="catalogo-itens" className="z-40" />
-
-        </main>
+    window.open(
+      `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`,
+      '_blank',
+      'noopener,noreferrer'
     );
+  };
+
+  /* ===============================
+     RENDER
+  ================================ */
+  return (
+    <main className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+
+      <DynamicBanner id="catalogo-topo" />
+
+      {/* HERO MAIS LIMPO */}
+      <section className="bg-[#005831] py-14">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white">
+            Catálogo de Empilhadeiras
+          </h1>
+          <p className="text-slate-200 mt-4 max-w-2xl mx-auto">
+            Equipamentos revisados, prontos para operação e com suporte técnico especializado.
+          </p>
+        </div>
+      </section>
+
+      {/* BUSCA */}
+      <section className="container mx-auto px-4 -mt-8 z-10 relative">
+        <div className="bg-white rounded-2xl shadow-lg p-4 max-w-2xl mx-auto">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              aria-label="Buscar empilhadeiras"
+              type="text"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Buscar por marca, modelo ou capacidade"
+              className="w-full pl-12 pr-10 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#005831] outline-none"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* CONTEÚDO */}
+      <section className="flex-1 container mx-auto px-4 py-16">
+
+        {loading ? (
+          <div className="flex flex-col items-center py-32">
+            <div className="w-12 h-12 border-4 border-slate-200 border-t-[#005831] rounded-full animate-spin" />
+            <span className="mt-4 text-slate-400">Carregando catálogo…</span>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="bg-white rounded-3xl p-16 text-center border border-dashed">
+            <Package size={48} className="mx-auto text-slate-300" />
+            <h3 className="mt-6 text-xl font-bold">Nenhum resultado encontrado</h3>
+            <p className="text-slate-500 mt-2">
+              Não encontramos equipamentos com esse termo.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Truck className="text-[#005831]" />
+                {searchTerm ? `Resultados para "${searchTerm}"` : 'Catálogo completo'}
+              </h2>
+              <span className="text-slate-500">
+                {items.length} itens
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+              {items.map(item => (
+                <ItemCard
+                  key={item.id}
+                  empilhadeira={item}
+                  onOpenModal={setSelectedItem}
+                  onWhatsApp={handleWhatsAppRedirect}
+                />
+              ))}
+            </div>
+
+            {hasMore && (
+              <div className="flex justify-center mt-16">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="flex items-center gap-3 px-8 py-3 rounded-full border-2 border-slate-200 font-bold hover:border-[#005831] hover:text-[#005831] transition disabled:opacity-60"
+                >
+                  {loadingMore ? 'Carregando…' : 'Ver mais'}
+                  <ArrowDownCircle size={20} />
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <ModalItem
+            empilhadeira={selectedItem}
+            onClose={() => setSelectedItem(null)}
+            onWhatsApp={handleWhatsAppRedirect}
+          />
+        </div>
+      )}
+
+      <DynamicBanner id="catalogo-rodape" />
+    </main>
+  );
 }
