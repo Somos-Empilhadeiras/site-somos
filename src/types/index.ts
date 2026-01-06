@@ -5,7 +5,7 @@ export interface Empilhadeira {
   name: string;
   description: string;
   price: number;
-  imageUrl: string; // No banco pode vir como image_url, o front normaliza ou a API devolve camelCase
+  imageUrl: string;
   
   // Campos específicos de Máquinas (Empilhadeiras)
   brand?: string;
@@ -19,9 +19,23 @@ export interface Empilhadeira {
   manufacturer?: string;
   quantity?: number;
   
-  // Tipo do item para controle visual
   type?: 'MACHINE' | 'PART' | 'SERVICE' | 'TIRE'; 
 }
 
-// Para manter compatibilidade, podemos dizer que Product é igual a Empilhadeira
 export type Product = Empilhadeira;
+
+export interface JobVacancy {
+  id: string;
+  title: string;
+  vacancyType: string;   // No banco: vacancy_type
+  workSchedule: string;  // No banco: work_schedule
+  location: string;
+  remuneration: string;
+  requirements: string[]; // Array de strings simples
+  activities: string[];
+  benefits: string[];
+  imageUrl?: string;
+  educationLevel: string; // No banco: education_level
+  observations?: string;
+  isActive: boolean;      // No banco: is_active
+}

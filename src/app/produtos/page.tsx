@@ -3,147 +3,252 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-    ArrowRight, 
-    Package,       // Ícone para Peças
-    Wrench,        // Ícone para Serviços
-    Disc,          // Ícone para Pneus
-    Loader2,
-    ShoppingBag
+  ArrowRight, 
+  Package, 
+  Wrench, 
+  Disc, 
+  ChevronRight,
+  Layers
 } from 'lucide-react';
-import ItemCard from '@/components/ItemCard'; // Reaproveitando seu card existente
-import DynamicBanner from '@/components/DynamicBanner';
-import { Empilhadeira } from '@/types'; // Ou a interface unificada que criamos
 
-// --- COMPONENTE AUXILIAR DA LINHA (Para não repetir código) ---
+import ItemCard from '@/components/ItemCard'; 
+import DynamicBanner from '@/components/DynamicBanner';
+import { Empilhadeira } from '@/types'; 
+
+// ======================================================
+// 1. COMPONENTE DE LINHA DE SOLUÇÃO (CATÁLOGO)
+// ======================================================
 interface CategoryRowProps {
-    title: string;
-    subtitle: string;
-    type: 'PART' | 'SERVICE' | 'TIRE';
-    linkHref: string;
-    icon: any;
+  id: string;
+  title: string;
+  subtitle: string;
+  type: 'PART' | 'SERVICE' | 'TIRE';
+  linkHref: string;
+  icon: any;
 }
 
-const CategoryRow = ({ title, subtitle, type, linkHref, icon: Icon }: CategoryRowProps) => {
-    const [items, setItems] = useState<Empilhadeira[]>([]);
-    const [loading, setLoading] = useState(true);
+const CategoryRow = ({ id, title, subtitle, type, linkHref, icon: Icon }: CategoryRowProps) => {
+  const [items, setItems] = useState<Empilhadeira[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchItems = async () => {
-            try {
-                // Busca apenas 4 itens do tipo específico
-                const res = await fetch(`/api/products?type=${type}&limit=4`);
-                const data = await res.json();
-                if (Array.isArray(data)) setItems(data);
-            } catch (error) {
-                console.error(`Erro ao buscar ${type}:`, error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchItems();
-    }, [type]);
+  useEffect(() => {
+    async function fetchItems() {
+      try {
+        const res = await fetch(`/api/products?type=${type}&limit=4`);
+        const data = await res.json();
+        if (Array.isArray(data)) setItems(data);
+      } catch (error) {
+        console.error(`Erro ao buscar ${type}`, error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchItems();
+  }, [type]);
 
-    // Se não tiver itens e não estiver carregando, não mostra a seção (opcional)
-    if (!loading && items.length === 0) return null;
+  if (!loading && items.length === 0) return null;
 
-    return (
-        <section className="py-12 border-b border-slate-100 last:border-0">
-            <div className="container mx-auto px-4">
-                {/* CABEÇALHO DA LINHA */}
-                <div className="flex items-end justify-between mb-8">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <div className="p-2 bg-green-100 text-[#005831] rounded-lg">
-                                <Icon size={20} />
-                            </div>
-                            <h2 className="text-2xl font-bold text-slate-800">{title}</h2>
-                        </div>
-                        <p className="text-slate-500 text-sm">{subtitle}</p>
-                    </div>
+  return (
+    <section id={id} className="py-20 border-b border-slate-200 bg-white">
+      <div className="container mx-auto px-4">
 
-                    <Link 
-                        href={linkHref}
-                        className="group flex items-center gap-1 text-[#005831] font-bold hover:text-green-700 transition-colors text-sm"
-                    >
-                        Ver todos
-                        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                </div>
-
-                {/* GRID DE PRODUTOS */}
-                {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {/* Skeletons de carregamento */}
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="h-[320px] bg-slate-100 rounded-2xl animate-pulse"></div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {items.map((item) => (
-                            <ItemCard 
-                                key={item.id} 
-                                empilhadeira={item} 
-                                onOpenModal={() => {}} // Se quiser modal na home, passe o state aqui
-                                onWhatsApp={(i) => {
-                                    // Função simples de whats caso não queira passar a complexa do pai
-                                    window.open(`https://wa.me/5562991834188?text=Ol%C3%A1%2C+vi+o+item+${i.name}+no+site.`, '_blank');
-                                }} 
-                            />
-                        ))}
-                    </div>
-                )}
+        {/* HEADER DA LINHA */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-10 border-l-4 border-[#005831] pl-6">
+          <div>
+            <div className="flex items-center gap-2 text-[#005831] font-bold text-xs tracking-widest uppercase mb-2">
+              <Icon size={14} />
+              <span>Linha de Solução</span>
             </div>
-        </section>
-    );
+            <h2 className="text-3xl font-bold text-slate-900">
+              {title}
+            </h2>
+            <p className="text-slate-500 mt-2 max-w-2xl text-sm">
+              {subtitle}
+            </p>
+          </div>
+
+          <Link 
+            href={linkHref}
+            className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-[#005831] transition-colors border-b border-transparent hover:border-[#005831]"
+          >
+            VER CATÁLOGO COMPLETO
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        {/* GRID */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-[360px] bg-slate-100 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {items.map(item => (
+              <ItemCard 
+                key={item.id}
+                empilhadeira={item}
+                onOpenModal={() => {}}
+                onWhatsApp={(i) =>
+                  window.open(
+                    `https://wa.me/5562991834188?text=Interesse:${i.name}`,
+                    '_blank'
+                  )
+                }
+              />
+            ))}
+          </div>
+        )}
+
+        {/* LINK MOBILE */}
+        <div className="mt-8 md:hidden text-center">
+          <Link href={linkHref} className="inline-flex items-center gap-2 text-sm font-bold text-[#005831]">
+            VER CATÁLOGO COMPLETO
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+
+      </div>
+    </section>
+  );
 };
 
-// --- PÁGINA PRINCIPAL DE PRODUTOS ---
+// ======================================================
+// 2. PÁGINA PRINCIPAL
+// ======================================================
 export default function ProductsPage() {
-    return (
-        <main className="min-h-screen bg-slate-50">
-            <DynamicBanner id="produtos-hero" />
 
-            {/* HEADER DA PÁGINA */}
-            <div className="bg-[#005831] py-16 text-center text-white relative overflow-hidden">
-                <div className="relative z-10 container mx-auto px-4">
-                    <h1 className="text-4xl font-extrabold mb-4">Nossos Produtos e Serviços</h1>
-                    <p className="text-green-100 text-lg max-w-2xl mx-auto">
-                        Tudo o que sua operação logística precisa em um só lugar. De peças de reposição a manutenção especializada.
-                    </p>
-                </div>
-                {/* Efeito de fundo */}
-                <ShoppingBag className="absolute -bottom-10 -right-10 text-white opacity-5 w-64 h-64 rotate-12" />
-            </div>
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
 
-            {/* 1. LINHA DE PEÇAS */}
-            <CategoryRow 
-                title="Peças & Componentes"
-                subtitle="Itens de reposição originais e genéricos de alta qualidade."
-                type="PART"
-                linkHref="/produtos/pecas"
-                icon={Package}
-            />
+    const offset = el.getBoundingClientRect().top + window.scrollY - 120;
+    window.scrollTo({ top: offset, behavior: 'smooth' });
+  };
 
-            {/* 2. LINHA DE SERVIÇOS */}
-            <CategoryRow 
-                title="Serviços Especializados"
-                subtitle="Manutenção preventiva, corretiva e reformas."
-                type="SERVICE"
-                linkHref="/produtos/servicos"
-                icon={Wrench}
-            />
+  return (
+    <main className="min-h-screen bg-slate-50">
 
-            {/* 3. LINHA DE PNEUS */}
-            <CategoryRow 
-                title="Pneus Industriais"
-                subtitle="Pneumáticos, superelásticos e maciços para todo terreno."
-                type="TIRE"
-                linkHref="/produtos/pneus"
-                icon={Disc}
-            />
+      <DynamicBanner id="produtos-hero" />
 
-            <DynamicBanner id="produtos-rodape" />
-        </main>
-    );
-}   
+      {/* ================================================= */}
+      {/* HEADER INSTITUCIONAL */}
+      {/* ================================================= */}
+      <div className="bg-[#bb0303] pt-20 pb-28 text-white border-b-4 border-[#005831]">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold uppercase mb-4">
+            Soluções para Operação e Manutenção Industrial
+          </h1>
+          <p className="text-gray-200 text-lg max-w-3xl mx-auto font-light">
+            Peças, serviços técnicos e pneus industriais para garantir
+            disponibilidade, segurança e desempenho contínuo da sua frota.
+          </p>
+        </div>
+      </div>
+
+      {/* ================================================= */}
+      {/* BLOCO DE VALOR (INSTITUCIONAL CURTO) */}
+      {/* ================================================= */}
+      <div className="container mx-auto px-4 py-14">
+        <div className="grid md:grid-cols-3 gap-10 text-center">
+          
+          <div>
+            <Layers size={36} className="mx-auto text-[#005831] mb-4" />
+            <h3 className="font-bold uppercase text-sm text-slate-900">
+              Portfólio Completo
+            </h3>
+            <p className="text-slate-500 text-sm mt-2">
+              Soluções integradas para manutenção, reposição e operação industrial.
+            </p>
+          </div>
+
+          <div>
+            <Wrench size={36} className="mx-auto text-[#005831] mb-4" />
+            <h3 className="font-bold uppercase text-sm text-slate-900">
+              Especialização Técnica
+            </h3>
+            <p className="text-slate-500 text-sm mt-2">
+              Atendimento técnico preparado para ambientes de alta exigência.
+            </p>
+          </div>
+
+          <div>
+            <Package size={36} className="mx-auto text-[#005831] mb-4" />
+            <h3 className="font-bold uppercase text-sm text-slate-900">
+              Agilidade Operacional
+            </h3>
+            <p className="text-slate-500 text-sm mt-2">
+              Redução de paradas e resposta rápida às demandas do cliente.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ================================================= */}
+      {/* MENU DE NAVEGAÇÃO POR SOLUÇÃO */}
+      {/* ================================================= */}
+      <div className="container mx-auto px-4 -mt-6 relative z-20 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 bg-white shadow-lg border border-slate-200 divide-y md:divide-y-0 md:divide-x">
+
+          <button onClick={() => scrollToSection('section-pecas')} className="group p-8 text-left hover:bg-slate-50 transition-colors">
+            <Package className="text-slate-400 group-hover:text-[#005831] mb-4" size={32} />
+            <h3 className="font-bold uppercase text-slate-900">Peças</h3>
+            <p className="text-sm text-slate-500 mt-2">Reposição mecânica e hidráulica.</p>
+            <ChevronRight className="mt-4 text-slate-300 group-hover:text-[#005831]" />
+          </button>
+
+          <button onClick={() => scrollToSection('section-servicos')} className="group p-8 text-left hover:bg-slate-50 transition-colors">
+            <Wrench className="text-slate-400 group-hover:text-[#005831] mb-4" size={32} />
+            <h3 className="font-bold uppercase text-slate-900">Serviços</h3>
+            <p className="text-sm text-slate-500 mt-2">Manutenção e diagnósticos técnicos.</p>
+            <ChevronRight className="mt-4 text-slate-300 group-hover:text-[#005831]" />
+          </button>
+
+          <button onClick={() => scrollToSection('section-pneus')} className="group p-8 text-left hover:bg-slate-50 transition-colors">
+            <Disc className="text-slate-400 group-hover:text-[#005831] mb-4" size={32} />
+            <h3 className="font-bold uppercase text-slate-900">Pneus</h3>
+            <p className="text-sm text-slate-500 mt-2">Pneumáticos e superelásticos.</p>
+            <ChevronRight className="mt-4 text-slate-300 group-hover:text-[#005831]" />
+          </button>
+
+        </div>
+      </div>
+
+      {/* ================================================= */}
+      {/* CATÁLOGO */}
+      {/* ================================================= */}
+      <div className="bg-white">
+        <CategoryRow 
+          id="section-pecas"
+          title="PEÇAS DE REPOSIÇÃO"
+          subtitle="Componentes homologados para máxima confiabilidade operacional."
+          type="PART"
+          linkHref="/produtos/pecas"
+          icon={Package}
+        />
+
+        <CategoryRow 
+          id="section-servicos"
+          title="SERVIÇOS TÉCNICOS"
+          subtitle="Manutenção especializada e suporte técnico em campo."
+          type="SERVICE"
+          linkHref="/produtos/servicos"
+          icon={Wrench}
+        />
+
+        <CategoryRow 
+          id="section-pneus"
+          title="PNEUS INDUSTRIAIS"
+          subtitle="Durabilidade e desempenho para ambientes internos e externos."
+          type="TIRE"
+          linkHref="/produtos/pneus"
+          icon={Disc}
+        />
+      </div>
+
+      <DynamicBanner id="produtos-rodape" />
+    </main>
+  );
+}

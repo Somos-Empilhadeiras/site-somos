@@ -97,9 +97,11 @@ export default function Navbar() {
                   <div className="bg-white border border-slate-100 shadow-xl rounded-xl overflow-hidden w-56 p-2">
                     <div className="text-xs font-bold text-slate-400 px-3 py-2 uppercase tracking-wider">Nossas Lojas</div>
                     {/* Lista simplificada para o exemplo */}
-                    <div className="px-3 py-2 hover:bg-green-50 rounded cursor-default"><span className="font-bold block text-sm">Goiânia - GO</span><span className="text-xs text-slate-500">Matriz</span></div>
-                    <div className="px-3 py-2 hover:bg-green-50 rounded cursor-default"><span className="font-bold block text-sm">Brasília - DF</span></div>
-                    <div className="px-3 py-2 hover:bg-green-50 rounded cursor-default"><span className="font-bold block text-sm">Palmas - TO</span></div>
+                    <Link href="/unidades/go" className="px-3 py-2 hover:bg-green-50 rounded cursor-default"><span className="font-bold block text-sm">Goiânia - GO</span><span className="text-xs text-slate-500">Matriz</span></Link>
+                    <Link href="/unidades/df" className="px-3 py-2 hover:bg-green-50 rounded cursor-default"><span className="font-bold block text-sm">Brasília - DF</span></Link>
+                    <Link href="/unidades/to" className="px-3 py-2 hover:bg-green-50 rounded cursor-default"><span className="font-bold block text-sm">Palmas - TO</span></Link>
+                    <Link href="/unidades/ba" className="px-3 py-2 hover:bg-green-50 rounded cursor-default"><span className="font-bold block text-sm">Luis Eduardo Magalhães - BA</span></Link>
+                    <Link href="/unidades/pe" className="px-3 py-2 hover:bg-green-50 rounded cursor-default"><span className="font-bold block text-sm">Recife - PE</span></Link>
                   </div>
                 </div>
               </div>

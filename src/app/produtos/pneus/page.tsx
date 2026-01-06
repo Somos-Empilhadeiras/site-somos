@@ -14,6 +14,7 @@ import DynamicBanner from '@/components/DynamicBanner';
 import ItemCard from '@/components/ItemCard';
 import ModalItem from '@/components/ModalItem';
 import { Empilhadeira } from '@/types';
+import { COMPANY_CONTACTS } from '@/lib/constants';
 
 /* ===============================
    CONFIGURAÇÕES DO CATÁLOGO
@@ -115,7 +116,7 @@ export default function TiresCatalog() {
   };
 
   const handleWhatsAppRedirect = (item: Empilhadeira) => {
-    const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "5562991834188";
+    const phone = COMPANY_CONTACTS.alan_phone_raw;
     const link = `${window.location.origin}/pneus?id=${item.id}`;
 
     let message = `*SOLICITAÇÃO DE PNEUS*\n\n`;
