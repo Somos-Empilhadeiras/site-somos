@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { 
     X, Save, Layout, CreditCard, AlertTriangle, GalleryHorizontal, 
-    Plus, Settings, ChevronDown, ChevronUp, CheckSquare, Tag, Image as ImageIcon 
+    Settings, Tag, AlignLeft, AlignCenter, AlignRight, Monitor, 
+    Type, Clock, Palette, MousePointerClick, Trash2, Image as ImageIcon
 } from 'lucide-react';
 import { BannerConfig, CarouselItem, SLOT_GROUPS } from '@/types/admin';
 import ImageUpload from '../ui/ImageUpload';
@@ -17,161 +18,368 @@ interface Props {
 }
 
 export default function BannerForm({ formData, setFormData, onSubmit, onCancel, loading, isEditing }: Props) {
-    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [activeTab, setActiveTab] = useState<'content' | 'style'>('content');
 
-    // --- Helpers para Slots ---
-    const handleSlotToggle = (slotValue: string) => {
-        const currentIds = formData.ids || [];
-        if (currentIds.includes(slotValue)) {
-            setFormData({ ...formData, ids: currentIds.filter(id => id !== slotValue) });
-        } else {
-            setFormData({ ...formData, ids: [...currentIds, slotValue] });
-        }
+    const handleSlotSelect = (slotValue: string) => {
+        setFormData({ ...formData, ids: [slotValue] });
     };
 
-    // --- Helpers para Carrossel ---
     const addCarouselItem = () => {
-        setFormData({ ...formData, carouselItems: [...(formData.carouselItems || []), { title: '', description: '', imageUrl: '', link: '' }] });
+        setFormData({ 
+            ...formData, 
+            carouselItems: [...(formData.carouselItems || []), { 
+                title: '', description: '', imageUrl: '', link: '', buttonText: 'Saiba Mais',
+                secondaryButtonText: '', secondaryButtonLink: '', secondaryButtonTransparent: true 
+            }] 
+        });
     };
 
     const removeCarouselItem = (index: number) => {
         setFormData({ ...formData, carouselItems: (formData.carouselItems || []).filter((_, i) => i !== index) });
     };
 
-    const updateCarouselItem = (index: number, field: keyof CarouselItem, value: string) => {
+    const updateCarouselItem = (index: number, field: keyof CarouselItem, value: any) => {
         const newItems = [...(formData.carouselItems || [])];
         newItems[index] = { ...newItems[index], [field]: value };
         setFormData({ ...formData, carouselItems: newItems });
     };
 
     return (
-        <div className="col-span-12 lg:col-span-5 bg-white p-6 rounded-xl shadow-xl border border-slate-200 border-t-4 border-t-purple-500 sticky top-4 z-20">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="font-bold text-lg text-slate-800">
-                    {isEditing ? 'Editar Banner' : 'Novo Banner'}
-                </h2>
-                <button onClick={onCancel} className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-red-500 transition-colors"><X size={20} /></button>
+        <div className="col-span-12 lg:col-span-6 bg-white p-0 rounded-xl shadow-2xl border border-slate-200 sticky top-4 z-50 h-[90vh] flex flex-col">
+            
+            {/* Header Fixo */}
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 backdrop-blur-sm shrink-0">
+                <div>
+                    <h2 className="font-bold text-lg text-slate-800">{isEditing ? 'Editar Campanha' : 'Nova Campanha'}</h2>
+                    <p className="text-xs text-slate-400">Configure o visual e o conteúdo do banner.</p>
+                </div>
+                <button onClick={onCancel} className="p-2 hover:bg-red-50 rounded-full text-slate-400 hover:text-red-500 transition-colors"><X size={20} /></button>
             </div>
 
-            <form onSubmit={onSubmit} className="space-y-6">
-                {/* Nome Interno */}
-                <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nome Interno (Organização)</label>
-                    <input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Ex: Promo Natal" className="w-full border p-2 rounded text-sm" />
-                </div>
+            {/* Tabs de Navegação */}
+            <div className="flex border-b border-slate-200 shrink-0">
+                <button 
+                    type="button"
+                    onClick={() => setActiveTab('content')}
+                    className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'content' ? 'border-purple-600 text-purple-700 bg-purple-50/50' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
+                >
+                    <Layout size={16} /> Conteúdo & Slides
+                </button>
+                <button 
+                    type="button"
+                    onClick={() => setActiveTab('style')}
+                    className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'style' ? 'border-purple-600 text-purple-700 bg-purple-50/50' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
+                >
+                    <Palette size={16} /> Estilo & Cores
+                </button>
+            </div>
 
-                {/* Seleção de Slots (Locais) */}
-                <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar">
-                    <label className="text-sm font-bold text-slate-700 flex items-center gap-2"><Tag size={16} className="text-purple-600" /> Onde exibir?</label>
-                    {Object.entries(SLOT_GROUPS).map(([group, slots]) => (
-                        <div key={group}>
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{group}</h4>
-                            <div className="grid grid-cols-2 gap-2">
-                                {slots.map(slot => {
-                                    const isSelected = formData.ids.includes(slot.value);
-                                    return (
-                                        <div key={slot.value} onClick={() => handleSlotToggle(slot.value)} className={`cursor-pointer rounded border px-2 py-1.5 flex items-center gap-2 transition-all ${isSelected ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white hover:border-purple-300 text-slate-600'}`}>
-                                            <div className={`w-4 h-4 rounded flex items-center justify-center border ${isSelected ? 'border-white bg-white/20' : 'bg-slate-100'}`}>{isSelected && <CheckSquare size={10} />}</div>
-                                            <span className="text-xs font-bold">{slot.label}</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+            {/* Corpo do Formulário com Scroll */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+                <form id="banner-form" onSubmit={onSubmit} className="space-y-8 pb-10">
+                    
+                    {/* --- TAB: CONTEÚDO --- */}
+                    {activeTab === 'content' && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-300">
+                            
+                            {/* 1. Informações Básicas */}
+                            <div className="grid grid-cols-1 gap-5 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nome da Campanha</label>
+                                    <input required value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Ex: Promoção de Natal" className="w-full border border-slate-300 p-2 rounded text-sm focus:border-purple-500 outline-none" />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Local de Exibição</label>
+                                    <select 
+                                        className="w-full border border-slate-300 p-2 rounded text-sm bg-white focus:border-purple-500 outline-none"
+                                        onChange={(e) => handleSlotSelect(e.target.value)}
+                                        value={formData.ids[0] || ''}
+                                    >
+                                        <option value="" disabled>Selecione um local...</option>
+                                        {Object.entries(SLOT_GROUPS).map(([group, slots]) => (
+                                            <optgroup key={group} label={group}>
+                                                {slots.map(slot => <option key={slot.value} value={slot.value}>{slot.label}</option>)}
+                                            </optgroup>
+                                        ))}
+                                    </select>
+                                </div>
 
-                {/* Seletor de Layout */}
-                <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Estilo Visual</label>
-                    <div className="grid grid-cols-4 gap-2">
-                        {['full', 'compact', 'alert', 'carousel'].map((layout) => (
-                            <button key={layout} type="button" onClick={() => setFormData({ ...formData, layout: layout as any })} className={`p-2 border rounded flex flex-col items-center gap-1 transition-all ${formData.layout === layout ? 'border-purple-600 bg-purple-50 text-purple-900 ring-1 ring-purple-500' : 'border-slate-200 hover:bg-slate-50'}`}>
-                                {layout === 'full' && <Layout size={18} />}
-                                {layout === 'compact' && <CreditCard size={18} />}
-                                {layout === 'alert' && <AlertTriangle size={18} />}
-                                {layout === 'carousel' && <GalleryHorizontal size={18} />}
-                                <span className="text-[10px] font-bold uppercase">{layout}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Conteúdo Específico por Layout */}
-                {formData.layout === 'carousel' ? (
-                    <div className="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <div className="flex justify-between items-center">
-                            <label className="text-sm font-bold">Slides</label>
-                            <button type="button" onClick={addCarouselItem} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold hover:bg-green-200">+ Adicionar Slide</button>
-                        </div>
-                        {formData.carouselItems?.map((item, idx) => (
-                            <div key={idx} className="border p-3 rounded bg-white relative space-y-2">
-                                <button type="button" onClick={() => removeCarouselItem(idx)} className="absolute top-2 right-2 text-slate-300 hover:text-red-500"><X size={14} /></button>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">Slide {idx + 1}</p>
-                                <div className="grid grid-cols-3 gap-3">
-                                    <div className="h-20">
-                                        <ImageUpload currentImageUrl={item.imageUrl} onUpload={(url) => updateCarouselItem(idx, 'imageUrl', url)} label="Img" />
-                                    </div>
-                                    <div className="col-span-2 space-y-2">
-                                        <input placeholder="Título" value={item.title} onChange={e => updateCarouselItem(idx, 'title', e.target.value)} className="w-full border p-1 rounded text-xs" />
-                                        <input placeholder="Descrição" value={item.description} onChange={e => updateCarouselItem(idx, 'description', e.target.value)} className="w-full border p-1 rounded text-xs" />
-                                        <input placeholder="Link (opcional)" value={item.link} onChange={e => updateCarouselItem(idx, 'link', e.target.value)} className="w-full border p-1 rounded text-xs" />
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Formato</label>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {[
+                                            { id: 'carousel', icon: GalleryHorizontal, label: 'Carrossel' },
+                                            { id: 'full', icon: Layout, label: 'Hero Full' },
+                                            { id: 'compact', icon: CreditCard, label: 'Card' },
+                                            { id: 'alert', icon: AlertTriangle, label: 'Aviso' }
+                                        ].map((type) => (
+                                            <button 
+                                                key={type.id} 
+                                                type="button" 
+                                                onClick={() => setFormData({ ...formData, layout: type.id as any })} 
+                                                className={`p-2 border rounded flex flex-col items-center gap-1 transition-all ${formData.layout === type.id ? 'border-purple-600 bg-purple-100 text-purple-800 ring-1 ring-purple-500' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'}`}
+                                            >
+                                                <type.icon size={18} />
+                                                <span className="text-[10px] font-bold">{type.label}</span>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
-                        ))}
-                         {(!formData.carouselItems || formData.carouselItems.length === 0) && <p className="text-xs text-center text-slate-400 py-2">Nenhum slide adicionado.</p>}
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        <input value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Título Principal" className="w-full border p-2 rounded font-bold" />
-                        <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Descrição..." rows={2} className="w-full border p-2 rounded resize-none text-sm" />
-                        <div className="grid grid-cols-2 gap-2">
-                            <input value={formData.ctaText} onChange={e => setFormData({ ...formData, ctaText: e.target.value })} placeholder="Texto Botão" className="border p-2 rounded text-sm" />
-                            <input value={formData.ctaLink} onChange={e => setFormData({ ...formData, ctaLink: e.target.value })} placeholder="Link Botão" className="border p-2 rounded text-sm" />
-                        </div>
-                        {formData.layout !== 'alert' && (
-                            <div className="h-32">
-                                <ImageUpload currentImageUrl={formData.imageUrl} onUpload={(url) => setFormData({...formData, imageUrl: url})} label="Imagem de Fundo/Destaque" />
-                            </div>
-                        )}
-                    </div>
-                )}
 
-                {/* Personalização Avançada (Cores) */}
-                <div className="border-t pt-4">
-                    <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} className="text-xs font-bold text-slate-500 flex items-center gap-1 w-full justify-between p-2 hover:bg-slate-50 rounded">
-                        <span className="flex gap-1 items-center"><Settings size={14} /> Personalização (Cores & Posição)</span>
-                        {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </button>
-                    {showAdvanced && (
-                        <div className="p-3 bg-slate-50 rounded border space-y-3 mt-2">
-                            {formData.layout !== 'alert' && formData.layout !== 'carousel' && (
-                                <div className="flex gap-4">
-                                    <span className="text-xs font-bold">Posição Imagem:</span>
-                                    <label className="flex items-center gap-1 text-xs"><input type="radio" checked={formData.imagePosition === 'left'} onChange={() => setFormData({ ...formData, imagePosition: 'left' })} /> Esq</label>
-                                    <label className="flex items-center gap-1 text-xs"><input type="radio" checked={formData.imagePosition === 'right'} onChange={() => setFormData({ ...formData, imagePosition: 'right' })} /> Dir</label>
+                            {/* 2. Gerenciamento de Slides (CARROSSEL) */}
+                            {formData.layout === 'carousel' && (
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center sticky top-0 bg-white py-2 z-10 border-b border-white">
+                                        <label className="text-sm font-bold text-slate-800 flex items-center gap-2"><GalleryHorizontal size={18} className="text-purple-600"/> Slides do Carrossel</label>
+                                        <button type="button" onClick={addCarouselItem} className="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-full font-bold hover:bg-slate-800 shadow flex items-center gap-1 transition-transform active:scale-95"><Monitor size={12}/> Adicionar Slide</button>
+                                    </div>
+                                    
+                                    <div className="space-y-8">
+                                        {formData.carouselItems?.map((item, idx) => (
+                                            <div key={idx} className="border border-slate-300 rounded-xl bg-white overflow-hidden shadow-sm group">
+                                                
+                                                {/* Header do Slide */}
+                                                <div className="bg-slate-100 p-3 border-b border-slate-200 flex justify-between items-center">
+                                                    <span className="text-xs font-bold text-slate-600 uppercase flex items-center gap-2">
+                                                        <span className="bg-slate-300 text-slate-700 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">{idx + 1}</span>
+                                                        Slide {idx + 1}
+                                                    </span>
+                                                    <button type="button" onClick={() => removeCarouselItem(idx)} className="text-slate-400 hover:text-red-600 transition-colors" title="Remover Slide"><Trash2 size={16} /></button>
+                                                </div>
+                                                
+                                                <div className="p-5 flex flex-col gap-5">
+                                                    
+                                                    {/* ÁREA 1: IMAGEM (EM CIMA) */}
+                                                    <div className="w-full">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 flex items-center gap-1"><ImageIcon size={12}/> Imagem de Fundo</label>
+                                                        <div className="h-40 w-full rounded-lg overflow-hidden border-2 border-dashed border-slate-300 bg-slate-50 relative hover:border-purple-400 transition-colors">
+                                                            <ImageUpload currentImageUrl={item.imageUrl} onUpload={(url) => updateCarouselItem(idx, 'imageUrl', url)} label="Carregar Imagem" />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* ÁREA 2: TEXTOS */}
+                                                    <div className="space-y-3">
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Título Principal</label>
+                                                            {/* ADICIONADO || '' para evitar erro de uncontrolled input */}
+                                                            <input value={item.title || ''} onChange={e => updateCarouselItem(idx, 'title', e.target.value)} className="w-full border border-slate-300 rounded p-2 text-sm font-bold focus:border-purple-500 outline-none placeholder:font-normal" placeholder="Ex: Oferta de Verão" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Subtítulo / Descrição</label>
+                                                            {/* ADICIONADO || '' */}
+                                                            <textarea value={item.description || ''} onChange={e => updateCarouselItem(idx, 'description', e.target.value)} rows={2} className="w-full border border-slate-300 rounded p-2 text-xs focus:border-purple-500 outline-none resize-none" placeholder="Ex: Descontos de até 50%..." />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* ÁREA 3: BOTÕES (GRID) */}
+                                                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-3">Ações (Botões)</p>
+                                                        
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                            {/* Botão 1 */}
+                                                            <div className="space-y-2">
+                                                                <span className="text-[10px] font-bold text-purple-700 uppercase flex items-center gap-1"><MousePointerClick size={10}/> Botão Principal</span>
+                                                                {/* ADICIONADO || '' */}
+                                                                <input placeholder="Texto (Ex: Comprar)" value={item.buttonText || ''} onChange={e => updateCarouselItem(idx, 'buttonText', e.target.value)} className="w-full border border-slate-300 p-2 rounded text-xs bg-white" />
+                                                                {/* ADICIONADO || '' */}
+                                                                <input placeholder="Link (https://...)" value={item.link || ''} onChange={e => updateCarouselItem(idx, 'link', e.target.value)} className="w-full border border-slate-300 p-2 rounded text-xs bg-white text-slate-600" />
+                                                            </div>
+
+                                                            {/* Botão 2 */}
+                                                            <div className="space-y-2">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Botão Secundário</span>
+                                                                    <label className="flex items-center gap-1 cursor-pointer select-none" title="Fundo transparente com borda">
+                                                                        <input 
+                                                                            type="checkbox" 
+                                                                            checked={item.secondaryButtonTransparent !== false} 
+                                                                            onChange={e => updateCarouselItem(idx, 'secondaryButtonTransparent', e.target.checked)}
+                                                                            className="rounded text-purple-600 focus:ring-purple-500 w-3 h-3 cursor-pointer"
+                                                                        />
+                                                                        <span className="text-[9px] text-slate-400">Outline</span>
+                                                                    </label>
+                                                                </div>
+                                                                {/* ADICIONADO || '' */}
+                                                                <input placeholder="Texto (Ex: Ver Vídeo)" value={item.secondaryButtonText || ''} onChange={e => updateCarouselItem(idx, 'secondaryButtonText', e.target.value)} className="w-full border border-slate-300 p-2 rounded text-xs bg-white" />
+                                                                {/* ADICIONADO || '' */}
+                                                                <input placeholder="Link Secundário" value={item.secondaryButtonLink || ''} onChange={e => updateCarouselItem(idx, 'secondaryButtonLink', e.target.value)} className="w-full border border-slate-300 p-2 rounded text-xs bg-white text-slate-600" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {(!formData.carouselItems || formData.carouselItems.length === 0) && (
+                                            <div className="flex flex-col items-center justify-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-300">
+                                                <GalleryHorizontal size={40} className="text-slate-300 mb-2" />
+                                                <p className="text-slate-400 text-sm">Nenhum slide adicionado.</p>
+                                                <button type="button" onClick={addCarouselItem} className="mt-2 text-xs text-purple-600 font-bold hover:underline">Clique para adicionar o primeiro slide</button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
-                            <div className="grid grid-cols-2 gap-2">
-                                <div><span className="text-xs text-slate-500">Fundo</span><div className="flex"><input type="color" value={formData.bgColor} onChange={e => setFormData({ ...formData, bgColor: e.target.value })} className="h-6 w-6 cursor-pointer" /><input value={formData.bgColor} onChange={e => setFormData({ ...formData, bgColor: e.target.value })} className="w-full border text-xs p-1" /></div></div>
-                                <div><span className="text-xs text-slate-500">Texto</span><div className="flex"><input type="color" value={formData.textColor} onChange={e => setFormData({ ...formData, textColor: e.target.value })} className="h-6 w-6 cursor-pointer" /><input value={formData.textColor} onChange={e => setFormData({ ...formData, textColor: e.target.value })} className="w-full border text-xs p-1" /></div></div>
+
+                            {/* Fallback para outros layouts (Hero Full, Card, Alert) */}
+                            {formData.layout !== 'carousel' && (
+                                <div className="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                                    <div className="w-full">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Imagem Principal</label>
+                                        <div className="h-40 w-full rounded-lg overflow-hidden border-2 border-dashed border-slate-300 bg-white">
+                                            <ImageUpload currentImageUrl={formData.imageUrl} onUpload={(url) => setFormData({...formData, imageUrl: url})} label="Carregar" />
+                                        </div>
+                                    </div>
+                                    <input value={formData.title || ''} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Título Principal" className="w-full border border-slate-300 p-2 rounded font-bold" />
+                                    <textarea value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Descrição" className="w-full border border-slate-300 p-2 rounded" />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <input value={formData.ctaText || ''} onChange={e => setFormData({ ...formData, ctaText: e.target.value })} placeholder="Texto Botão" className="border border-slate-300 p-2 rounded text-sm" />
+                                        <input value={formData.ctaLink || ''} onChange={e => setFormData({ ...formData, ctaLink: e.target.value })} placeholder="Link Botão" className="border border-slate-300 p-2 rounded text-sm" />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* --- TAB: ESTILO & CORES --- */}
+                    {activeTab === 'style' && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                            
+                            {/* Configurações de Texto e Tempo */}
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1"><Type size={14}/> Tamanho do Texto</label>
+                                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                                        {['small', 'medium', 'large'].map(size => (
+                                            <button 
+                                                key={size}
+                                                type="button"
+                                                onClick={() => setFormData({...formData, textSize: size as any})}
+                                                className={`flex-1 py-2 text-xs font-medium rounded-md transition-all ${formData.textSize === size ? 'bg-white text-purple-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                {size === 'small' ? 'Pequeno' : size === 'medium' ? 'Médio' : 'Grande'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                {formData.layout === 'carousel' && (
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1"><Clock size={14}/> Tempo (seg)</label>
+                                        <input 
+                                            type="number" 
+                                            min="3" max="20"
+                                            value={formData.slideDuration || 5} 
+                                            onChange={e => setFormData({...formData, slideDuration: Number(e.target.value)})}
+                                            className="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:border-purple-500"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Alinhamento */}
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 uppercase mb-2">Alinhamento do Conteúdo</label>
+                                <div className="flex gap-2">
+                                    {['left', 'center', 'right'].map((align) => (
+                                        <button 
+                                            key={align}
+                                            type="button"
+                                            onClick={() => setFormData({...formData, contentAlign: align as any})}
+                                            className={`flex-1 py-2 border rounded-lg flex justify-center hover:bg-slate-50 transition-all ${formData.contentAlign === align ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-sm' : 'border-slate-200 text-slate-400'}`}
+                                        >
+                                            {align === 'left' ? <AlignLeft size={18}/> : align === 'center' ? <AlignCenter size={18}/> : <AlignRight size={18}/>}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <hr className="border-slate-100" />
+
+                            {/* Paleta de Cores Detalhada */}
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2"><Palette size={16} /> Paleta de Cores</h3>
+                                <p className="text-xs text-slate-400 -mt-2 mb-4">Clique nos círculos para escolher as cores.</p>
+                                
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+                                    
+                                    {/* Textos */}
+                                    <div className="col-span-2 grid grid-cols-2 gap-4 pb-4 border-b border-slate-100">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase">Título</label>
+                                            <div className="flex gap-2 items-center border border-slate-200 p-1.5 rounded-lg bg-white">
+                                                <input type="color" value={formData.titleColor || '#ffffff'} onChange={e => setFormData({ ...formData, titleColor: e.target.value })} className="h-6 w-6 rounded cursor-pointer border-none p-0" />
+                                                <span className="text-xs text-slate-500 font-mono">{formData.titleColor || '#ffffff'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase">Descrição</label>
+                                            <div className="flex gap-2 items-center border border-slate-200 p-1.5 rounded-lg bg-white">
+                                                <input type="color" value={formData.descColor || '#e2e8f0'} onChange={e => setFormData({ ...formData, descColor: e.target.value })} className="h-6 w-6 rounded cursor-pointer border-none p-0" />
+                                                <span className="text-xs text-slate-500 font-mono">{formData.descColor || '#e2e8f0'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Botão Primário */}
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-purple-600 uppercase">Botão 1 (Fundo)</label>
+                                        <div className="flex gap-2 items-center border border-slate-200 p-1.5 rounded-lg bg-white">
+                                            <input type="color" value={formData.btnColor || '#005831'} onChange={e => setFormData({ ...formData, btnColor: e.target.value })} className="h-6 w-6 rounded cursor-pointer border-none p-0" />
+                                            <span className="text-xs text-slate-500 font-mono">{formData.btnColor}</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-purple-600 uppercase">Botão 1 (Texto)</label>
+                                        <div className="flex gap-2 items-center border border-slate-200 p-1.5 rounded-lg bg-white">
+                                            <input type="color" value={formData.btnTextColor || '#ffffff'} onChange={e => setFormData({ ...formData, btnTextColor: e.target.value })} className="h-6 w-6 rounded cursor-pointer border-none p-0" />
+                                            <span className="text-xs text-slate-500 font-mono">{formData.btnTextColor}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Botão Secundário */}
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase">Botão 2 (Cor)</label>
+                                        <div className="flex gap-2 items-center border border-slate-200 p-1.5 rounded-lg bg-white">
+                                            <input type="color" value={formData.secBtnColor || '#ffffff'} onChange={e => setFormData({ ...formData, secBtnColor: e.target.value })} className="h-6 w-6 rounded cursor-pointer border-none p-0" />
+                                            <span className="text-xs text-slate-500 font-mono">{formData.secBtnColor || '#ffffff'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase">Botão 2 (Texto)</label>
+                                        <div className="flex gap-2 items-center border border-slate-200 p-1.5 rounded-lg bg-white">
+                                            <input type="color" value={formData.secBtnTextColor || '#000000'} onChange={e => setFormData({ ...formData, secBtnTextColor: e.target.value })} className="h-6 w-6 rounded cursor-pointer border-none p-0" />
+                                            <span className="text-xs text-slate-500 font-mono">{formData.secBtnTextColor || '#000000'}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
-                </div>
+                </form>
+            </div>
 
-                {/* Rodapé do Form */}
-                <div className="flex justify-between items-center pt-2 border-t">
-                    <label className="flex gap-2 items-center cursor-pointer select-none bg-slate-50 px-3 py-2 rounded border">
-                        <input type="checkbox" checked={formData.isActive} onChange={e => setFormData({ ...formData, isActive: e.target.checked })} />
-                        <span className={`text-sm font-bold ${formData.isActive ? 'text-green-600' : 'text-slate-400'}`}>{formData.isActive ? 'Banner Ativo' : 'Rascunho'}</span>
-                    </label>
-                    <button type="submit" disabled={loading} className="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-bold shadow transition hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2">
-                        {loading ? 'Salvando...' : <><Save size={18} /> Salvar Banner</>}
-                    </button>
-                </div>
-            </form>
+            {/* Footer Fixo */}
+            <div className="p-5 border-t border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
+                <label className="flex gap-2 items-center cursor-pointer select-none">
+                    <div className={`w-10 h-5 rounded-full p-1 transition-colors ${formData.isActive ? 'bg-green-500' : 'bg-slate-300'}`}>
+                        <div className={`bg-white w-3 h-3 rounded-full shadow-md transform transition-transform ${formData.isActive ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                    </div>
+                    <input type="checkbox" className="hidden" checked={formData.isActive} onChange={e => setFormData({ ...formData, isActive: e.target.checked })} />
+                    <span className="text-sm font-medium text-slate-600">{formData.isActive ? 'Publicado' : 'Rascunho'}</span>
+                </label>
+                
+                <button 
+                    type="submit"
+                    form="banner-form"
+                    disabled={loading} 
+                    className="bg-slate-900 text-white px-6 py-2.5 rounded-lg font-bold shadow-lg hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2 transition-transform active:scale-95"
+                >
+                    {loading ? 'Salvando...' : <><Save size={18} /> Salvar Alterações</>}
+                </button>
+            </div>
         </div>
     );
 }

@@ -3,6 +3,10 @@ export interface CarouselItem {
   description: string;
   imageUrl: string;
   link: string;
+  buttonText?: string;
+  secondaryButtonText?: string;
+  secondaryButtonLink?: string;
+  secondaryButtonTransparent?: boolean; // Se true, o botão é outline/transparente
 }
 
 export interface BannerConfig {
@@ -22,6 +26,20 @@ export interface BannerConfig {
   btnColor: string;
   btnTextColor: string;
   imagePosition: 'left' | 'right';
+  textSize?: 'small' | 'medium' | 'large'; // Tamanho do texto
+  slideDuration?: number; // Tempo em segundos (ex: 5, 8, 10)
+  
+  // Cores específicas
+  titleColor?: string;
+  descColor?: string;
+  
+  // Botão Secundário (Global ou padrão)
+  secBtnColor?: string;
+  secBtnTextColor?: string;
+  
+  // Mantemos height e contentAlign do passo anterior
+  height?: string;
+  contentAlign?: 'left' | 'center' | 'right';
 }
 
 export interface AdminItem {
@@ -89,3 +107,4 @@ export const SLOT_GROUPS = {
       { value: 'servicos-rodape', label: 'Serviços - Rodapé' },
   ]
 };
+

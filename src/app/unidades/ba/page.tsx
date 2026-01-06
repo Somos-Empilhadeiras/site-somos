@@ -187,7 +187,7 @@ export default function UnitDetails({ stateId }: UnitDetailsProps) {
                 {/* Título Flutuante dentro do Mapa */}
                 <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-4 py-2 rounded-lg shadow-sm border border-slate-200">
                   <p className="text-xs font-bold text-slate-400 uppercase">Abrangência</p>
-                  <p className="text-sm font-bold text-[#005831]">Estado de {uf === 'DF' ? 'Distrito Federal' : uf}</p>
+                  <p className="text-sm font-bold text-[#005831]">{uf == 'BA' ? 'Oeste da' : 'Estado de'} {uf === 'DF' ? 'Distrito Federal' : uf}</p>
                 </div>
 
                 <ComposableMap

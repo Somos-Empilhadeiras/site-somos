@@ -22,8 +22,16 @@ export default function BannerManager() {
             const res = await fetch('/api/banners');
             const data = await res.json();
             
-            // Mapeamento CRUCIAL (Snake_case do Banco -> CamelCase do Frontend)
-            const formatted = data.map((b: any) => ({
+            // --- CORREÇÃO DE SEGURANÇA ---
+            // Verifica se 'data' é realmente um Array. Se não for, usa um array vazio.
+            // Isso evita o erro "map is not a function" se a API retornar um erro ou objeto.
+            const listToMap = Array.isArray(data) ? data : []; 
+
+            if (!Array.isArray(data)) {
+                console.warn("API de banners não retornou uma lista:", data);
+            }
+
+            const formatted = listToMap.map((b: any) => ({
                 id: b.id,
                 ids: b.ids || [],
                 name: b.name,
@@ -41,9 +49,11 @@ export default function BannerManager() {
                 btnTextColor: b.btn_text_color,
                 imagePosition: b.image_position
             }));
+            
             setBanners(formatted);
         } catch (error) {
             console.error("Erro ao buscar banners", error);
+            setBanners([]); // Garante que não quebre a UI
         }
     };
 
@@ -58,8 +68,12 @@ export default function BannerManager() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('Tem certeza que deseja excluir este banner?')) return;
-        await fetch(`/api/banners?id=${id}`, { method: 'DELETE' });
-        fetchBanners();
+        try {
+            await fetch(`/api/banners?id=${id}`, { method: 'DELETE' });
+            fetchBanners();
+        } catch (e) {
+            console.error("Erro ao deletar", e);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -69,8 +83,6 @@ export default function BannerManager() {
             const payload = { ...formData };
             if (editingId) payload.id = editingId;
             
-            // Nota: A API deve estar preparada para receber os campos e converter para snake_case
-            // ou você faz a conversão inversa aqui se sua API for estrita.
             const res = await fetch('/api/banners', { 
                 method: editingId ? 'PUT' : 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 

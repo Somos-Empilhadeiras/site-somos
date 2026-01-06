@@ -1,324 +1,319 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+
+import { useEffect, useState, useCallback } from 'react';
+import { X, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { ArrowRight, Megaphone, X, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 
-interface DynamicBannerProps {
-  id: string;
-  className?: string;
-}
-
+// Definição Completa dos Tipos
 interface CarouselItem {
   title: string;
   description: string;
   imageUrl: string;
   link: string;
+  buttonText?: string;
+  secondaryButtonText?: string;
+  secondaryButtonLink?: string;
+  secondaryButtonTransparent?: boolean;
 }
 
 interface BannerData {
+  id: string;
+  ids: string[];
   isActive: boolean;
   layout: 'full' | 'compact' | 'alert' | 'carousel';
+  
+  // Dados Gerais
   title: string;
   description: string;
   imageUrl: string;
   ctaText: string;
   ctaLink: string;
-  carouselItems?: CarouselItem[];
-  bgColor?: string;
-  textColor?: string;
-  btnColor?: string;
-  btnTextColor?: string;
-  imagePosition?: 'left' | 'right';
+  
+  // Cores Gerais
+  bgColor: string;
+  textColor: string;
+  btnColor: string;
+  btnTextColor: string;
+  
+  imagePosition: 'left' | 'right';
+  
+  // Carrossel
+  carouselItems: CarouselItem[];
+  
+  // Personalização Avançada (Novos Campos)
+  height?: string;
+  contentAlign?: 'left' | 'center' | 'right';
+  textSize?: 'small' | 'medium' | 'large';
+  slideDuration?: number;
+  
+  // Cores Específicas
+  titleColor?: string;
+  descColor?: string;
+  secBtnColor?: string;
+  secBtnTextColor?: string;
 }
 
-export default function DynamicBanner({ id, className = '' }: DynamicBannerProps) {
-  console.log("Renderizando DynamicBanner com ID:", id); // <--- Adicione isto
+interface Props {
+  id: string;
+  className?: string;
+}
+
+export default function DynamicBanner({ id, className = '' }: Props) {
   const [banner, setBanner] = useState<BannerData | null>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // --- 1. BUSCA E FILTRAGEM ---
   useEffect(() => {
     async function fetchBanner() {
       try {
-        const res = await fetch(`/api/banners?id=${id}`, {
-          cache: 'no-store', // Next.js / Standard fetch
-          headers: {
-            'Pragma': 'no-cache',
-            'Cache-Control': 'no-cache'
-          }
+        const res = await fetch('/api/banners'); 
+        const data: any[] = await res.json();
+
+        const found = data.find((b: any) => {
+           const bannerIds = b.ids || b.slot_ids || []; 
+           const isActive = b.is_active !== undefined ? b.is_active : b.isActive;
+           return isActive && bannerIds.includes(id);
         });
-        if (res.ok) {
-          let rawData = await res.json();
 
-          // 1. Trata se vier como Array (pega o primeiro item)
-          const dataItem = Array.isArray(rawData) ? rawData[0] : rawData;
-
-          if (dataItem) {
-            // 2. FAZ O MAPEAMENTO (Snake_case -> CamelCase)
-            const mappedBanner: BannerData = {
-              isActive: dataItem.is_active,  // AQUI ESTAVA O PROBLEMA PRINCIPAL
-              layout: dataItem.layout,
-              title: dataItem.title,
-              description: dataItem.description,
-              imageUrl: dataItem.image_url,
-              ctaText: dataItem.cta_text,
-              ctaLink: dataItem.cta_link,
-              // Mapeia os itens do carrossel se existirem
-              carouselItems: dataItem.carousel_items?.map((item: any) => ({
-                title: item.title,
-                description: item.description,
-                imageUrl: item.image_url,
-                link: item.link
-              })),
-              bgColor: dataItem.bg_color,
-              textColor: dataItem.text_color,
-              btnColor: dataItem.btn_color,
-              btnTextColor: dataItem.btn_text_color,
-              imagePosition: dataItem.image_position
-            };
-
-            // Agora verificamos a variável mapeada 'mappedBanner'
-            if (mappedBanner.isActive) {
-              console.log(`[SUCESSO] Banner ${id} ativado e mapeado:`, mappedBanner);
-              setBanner(mappedBanner);
-            } else {
-              console.warn(`[AVISO] Banner ${id} encontrado, mas is_active veio false.`, dataItem);
-            }
-          }
+        if (found) {
+             // Mapeia os dados do backend para o frontend, garantindo valores padrão
+             setBanner({
+                ...found,
+                // Garante arrays e objetos
+                carouselItems: found.carousel_items || found.carouselItems || [],
+                ids: found.ids || [],
+                
+                // Defaults de Estilo
+                height: found.height || 'h-[80vh]', 
+                contentAlign: found.contentAlign || 'left',
+                textSize: found.textSize || 'medium',
+                slideDuration: found.slideDuration || 5,
+                
+                // Defaults de Cor
+                bgColor: found.bg_color || found.bgColor || '#005831',
+                textColor: found.text_color || found.textColor || '#ffffff',
+                titleColor: found.titleColor || '#ffffff',
+                descColor: found.descColor || '#e2e8f0',
+                btnColor: found.btn_color || found.btnColor || '#005831',
+                btnTextColor: found.btn_text_color || found.btnTextColor || '#ffffff',
+                secBtnColor: found.secBtnColor || '#ffffff',
+                secBtnTextColor: found.secBtnTextColor || '#000000',
+             });
+        } else {
+            setBanner(null);
         }
       } catch (error) {
-        console.error(`Erro ao carregar banner ${id}:`, error);
+        console.error(`Erro banner ${id}:`, error);
       }
     }
     fetchBanner();
   }, [id]);
 
-  // Auto-Play Carrossel
-  useEffect(() => {
-    if (banner?.layout === 'carousel' && banner.carouselItems && banner.carouselItems.length > 1) {
-      const timer = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % banner.carouselItems!.length);
-      }, 5000);
-      return () => clearInterval(timer);
+  // --- 2. LÓGICA DO SLIDESHOW ---
+  const nextSlide = useCallback(() => {
+    if (banner?.carouselItems && banner.carouselItems.length > 0) {
+        setCurrentSlide((prev) => (prev + 1) % banner.carouselItems.length);
     }
   }, [banner]);
 
+  const prevSlide = () => {
+    if (banner?.carouselItems && banner.carouselItems.length > 0) {
+        setCurrentSlide((prev) => (prev === 0 ? banner.carouselItems.length - 1 : prev - 1));
+    }
+  };
+
+  useEffect(() => {
+    if (banner?.layout === 'carousel' && banner.carouselItems.length > 1) {
+        // Usa o tempo configurado ou 5 segundos como fallback
+        const intervalTime = (banner.slideDuration || 5) * 1000;
+        const timer = setInterval(nextSlide, intervalTime); 
+        return () => clearInterval(timer);
+    }
+  }, [banner, nextSlide]);
+
   if (!banner || !isVisible) return null;
 
-  const bg = banner.bgColor || '#005831';
-  const txt = banner.textColor || '#FFFFFF';
-  const btnBg = banner.btnColor || '#EAB308';
-  const btnTxt = banner.btnTextColor || '#005831';
+  // --- HELPER DE ESTILOS ---
+  // Define tamanhos de texto baseados na configuração
+  const getTextSizes = (size: string = 'medium') => {
+      switch(size) {
+          case 'small': return { title: 'text-3xl md:text-5xl', desc: 'text-base md:text-lg' };
+          case 'large': return { title: 'text-5xl md:text-7xl lg:text-8xl', desc: 'text-xl md:text-3xl' };
+          default: return { title: 'text-4xl md:text-6xl lg:text-7xl', desc: 'text-lg md:text-2xl' };
+      }
+  };
 
-  // =================================================================================
-  //                              LAYOUT: CARROSSEL
-  // =================================================================================
-  if (banner.layout === 'carousel') {
-    const items = banner.carouselItems || [];
+  const textSizes = getTextSizes(banner.textSize);
 
-    // PROTEÇÃO: Se não tiver itens, mostra aviso (apenas para você saber, em prod pode retornar null)
-    if (items.length === 0) {
+  // === RENDERIZAÇÃO: CARROSSEL ===
+  if (banner.layout === 'carousel' && banner.carouselItems.length > 0) {
+      
+      const alignClasses = {
+          'left': 'items-start text-left',
+          'center': 'items-center text-center',
+          'right': 'items-end text-right'
+      }[banner.contentAlign || 'left'];
+
       return (
-        <div className={`w-full h-64 bg-slate-100 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed ${className}`}>
-          <ImageOff size={48} className="mb-2" />
-          <p className="font-bold">Carrossel Ativo mas sem Slides</p>
-          <p className="text-xs">Adicione slides no Painel Admin</p>
+        <div className={`relative w-full overflow-hidden bg-slate-900 group min-h-[60vh] md:min-h-[85vh] ${className}`} style={{ height: banner.height === 'h-screen' ? '100vh' : undefined }}>
+             
+             {banner.carouselItems.map((item, index) => (
+                 <div 
+                    key={index}
+                    className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                        index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                    }`}
+                 >
+                     {/* Imagem de Fundo */}
+                     <div className="absolute inset-0">
+                         {item.imageUrl ? (
+                            <img 
+                                src={item.imageUrl} 
+                                className="w-full h-full object-cover object-center" 
+                                alt={item.title} 
+                            />
+                         ) : (
+                            <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500">Sem Imagem</div>
+                         )}
+                         
+                         {/* Overlay Gradiente Inteligente */}
+                         <div className={`absolute inset-0 bg-gradient-to-r ${
+                             banner.contentAlign === 'right' 
+                                ? 'from-transparent via-black/40 to-black/90' 
+                                : banner.contentAlign === 'center'
+                                    ? 'from-black/70 via-transparent to-black/70'
+                                    : 'from-black/90 via-black/40 to-transparent'
+                         }`}></div>
+                     </div>
+
+                     {/* Conteúdo do Slide */}
+                     <div className={`relative z-20 container mx-auto px-6 h-full flex flex-col justify-center ${alignClasses}`}>
+                         <div className="max-w-4xl space-y-6 animate-in slide-in-from-bottom-10 duration-1000 fade-in fill-mode-forwards pt-20">
+                             
+                             {/* Título */}
+                             {item.title && (
+                                 <h2 
+                                    className={`${textSizes.title} font-extrabold leading-tight drop-shadow-2xl`}
+                                    style={{ color: banner.titleColor }}
+                                 >
+                                     {item.title}
+                                 </h2>
+                             )}
+                             
+                             {/* Descrição */}
+                             {item.description && (
+                                 <p 
+                                    className={`${textSizes.desc} font-medium drop-shadow-lg max-w-3xl leading-relaxed opacity-90`}
+                                    style={{ color: banner.descColor }}
+                                 >
+                                     {item.description}
+                                 </p>
+                             )}
+                             
+                             {/* Área de Botões */}
+                             <div className={`pt-8 flex flex-wrap gap-4 ${banner.contentAlign === 'center' ? 'justify-center' : banner.contentAlign === 'right' ? 'justify-end' : 'justify-start'}`}>
+                                 
+                                 {/* Botão Primário */}
+                                 {item.link && (
+                                     <Link 
+                                        href={item.link} 
+                                        className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:-translate-y-1 shadow-xl hover:shadow-2xl"
+                                        style={{ backgroundColor: banner.btnColor, color: banner.btnTextColor }}
+                                     >
+                                         {item.buttonText || 'Saiba Mais'} <ArrowRight size={24} />
+                                     </Link>
+                                 )}
+
+                                 {/* Botão Secundário (Opcional) */}
+                                 {item.secondaryButtonLink && (
+                                     <Link 
+                                        href={item.secondaryButtonLink} 
+                                        className={`inline-flex items-center gap-3 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:-translate-y-1 shadow-lg ${
+                                            item.secondaryButtonTransparent 
+                                                ? 'bg-transparent border-2 backdrop-blur-sm hover:bg-white/10' 
+                                                : 'shadow-xl'
+                                        }`}
+                                        style={{ 
+                                            backgroundColor: item.secondaryButtonTransparent ? 'transparent' : banner.secBtnColor, 
+                                            color: item.secondaryButtonTransparent ? banner.secBtnColor : banner.secBtnTextColor,
+                                            borderColor: banner.secBtnColor
+                                        }}
+                                     >
+                                         {item.secondaryButtonText || 'Ver Mais'}
+                                     </Link>
+                                 )}
+                             </div>
+
+                         </div>
+                     </div>
+                 </div>
+             ))}
+
+             {/* Controles de Navegação */}
+             {banner.carouselItems.length > 1 && (
+                 <>
+                    <button onClick={prevSlide} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md border border-white/10 transition-all z-30 opacity-0 group-hover:opacity-100 hover:scale-110">
+                        <ChevronLeft size={40} />
+                    </button>
+                    <button onClick={nextSlide} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md border border-white/10 transition-all z-30 opacity-0 group-hover:opacity-100 hover:scale-110">
+                        <ChevronRight size={40} />
+                    </button>
+                    
+                    {/* Indicadores */}
+                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+                     {banner.carouselItems.map((_, idx) => (
+                         <button 
+                            key={idx} 
+                            onClick={() => setCurrentSlide(idx)}
+                            className={`h-3 rounded-full transition-all duration-500 shadow-sm ${
+                                idx === currentSlide 
+                                    ? 'w-12 ring-2 ring-white/50' 
+                                    : 'bg-white/40 w-3 hover:bg-white'
+                            }`}
+                            style={{ backgroundColor: idx === currentSlide ? banner.btnColor : undefined }}
+                         />
+                     ))}
+                 </div>
+                 </>
+             )}
         </div>
       );
-    }
-
-    const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % items.length);
-    const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? items.length - 1 : prev - 1));
-
-    return (
-      <section className={`relative w-full overflow-hidden h-[500px] md:h-[650px] group ${className}`}>
-        {items.map((item, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-            style={{ backgroundColor: bg }} // Usa a cor de fundo do banner como base
-          >
-            {/* Imagem de Fundo */}
-            <div className="absolute inset-0">
-              {item.imageUrl ? (
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-full object-cover opacity-60" // Ajuste opacidade conforme gosto
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-slate-800 text-white opacity-20">Sem Imagem</div>
-              )}
-              {/* Gradiente */}
-              <div className="absolute inset-0 bg-linear-to-r from-black/90 via-black/50 to-transparent"></div>
-            </div>
-
-            {/* Conteúdo */}
-            <div className="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center">
-              <div className="max-w-3xl animate-in slide-in-from-left-10 duration-700 fade-in">
-                <h2
-                  className="text-4xl md:text-6xl font-black mb-4 leading-tight drop-shadow-lg"
-                  style={{ color: txt }}
-                >
-                  {item.title}
-                </h2>
-                <p
-                  className="text-lg md:text-xl mb-8 max-w-xl font-medium drop-shadow-md opacity-90"
-                  style={{ color: txt }}
-                >
-                  {item.description}
-                </p>
-                {item.link && (
-                  <Link
-                    href={item.link}
-                    className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold hover:scale-105 transition-all shadow-lg"
-                    style={{ backgroundColor: btnBg, color: btnTxt }}
-                  >
-                    Saiba Mais <ArrowRight size={20} />
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Setas de Navegação */}
-        {items.length > 1 && (
-          <>
-            <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md border border-white/10 transition-all hidden md:block">
-              <ChevronLeft size={32} />
-            </button>
-            <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md border border-white/10 transition-all hidden md:block">
-              <ChevronRight size={32} />
-            </button>
-
-            {/* Bolinhas */}
-            <div className="absolute bottom-8 left-0 right-0 z-30 flex justify-center gap-3">
-              {items.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentSlide(idx)}
-                  className={`h-2 rounded-full transition-all duration-300 ${idx === currentSlide ? 'w-12' : 'w-2 bg-white/50 hover:bg-white'}`}
-                  style={{ backgroundColor: idx === currentSlide ? btnBg : undefined }}
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </section>
-    );
   }
 
-  // --- LAYOUT ALERTA ---
+  // === MANTENDO LAYOUTS ANTIGOS (Fallback) ===
   if (banner.layout === 'alert') {
     return (
-      <div
-        className={`px-4 py-3 relative shadow-md z-100 ${className}`}
-        style={{ backgroundColor: bg, color: txt }}
-      >
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left pr-8">
-          <div className="flex items-center gap-2 font-bold">
-            <Megaphone size={18} className="animate-pulse" />
-            <span>{banner.title}</span>
-          </div>
-          {banner.description && <span className="hidden sm:inline opacity-60">|</span>}
-          {banner.description && <p className="text-sm font-medium">{banner.description}</p>}
-          {banner.ctaLink && (
-            <Link href={banner.ctaLink} className="underline font-bold text-sm whitespace-nowrap hover:opacity-80" style={{ color: txt }}>
-              {banner.ctaText || 'Confira'}
-            </Link>
-          )}
+      <div className={`relative px-4 py-3 text-center text-sm font-bold shadow-md z-50 ${className}`} style={{ backgroundColor: banner.bgColor, color: banner.textColor }}>
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-center gap-2">
+           <span>{banner.title}</span>
+           {banner.ctaLink && <Link href={banner.ctaLink} className="underline flex items-center gap-1">{banner.ctaText} <ArrowRight size={12} /></Link>}
         </div>
-        <button onClick={() => setIsVisible(false)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:opacity-50 rounded-full transition-colors">
-          <X size={18} />
-        </button>
+        <button onClick={() => setIsVisible(false)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 opacity-70 hover:opacity-100"><X size={16} /></button>
       </div>
     );
   }
 
-  // --- LAYOUT COMPACTO ---
-  if (banner.layout === 'compact') {
-    const isRight = banner.imagePosition === 'right';
-    return (
-      <div className={`container mx-auto px-4 py-8 ${className}`}>
-        <div
-          className={`rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row group hover:shadow-2xl transition-all duration-300`}
-          style={{ backgroundColor: bg, color: txt }}
-        >
-          <div className={`md:w-1/3 h-56 md:h-auto relative overflow-hidden ${isRight ? 'md:order-2' : 'md:order-1'}`}>
-            <img
-              src={banner.imageUrl || "https://via.placeholder.com/400x300"}
-              alt={banner.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-            />
-          </div>
-          <div className={`md:w-2/3 p-6 md:p-10 flex flex-col justify-center ${isRight ? 'md:order-1' : 'md:order-2'}`}>
-            <h3 className="text-2xl font-bold mb-3" style={{ color: txt }}>{banner.title}</h3>
-            <p className="mb-6 text-lg opacity-90" style={{ color: txt }}>{banner.description}</p>
-            <div>
-              <Link
-                href={banner.ctaLink || '#'}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition shadow-lg hover:-translate-y-1"
-                style={{ backgroundColor: btnBg, color: btnTxt }}
-              >
-                {banner.ctaText || 'Saiba Mais'} <ArrowRight size={18} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // --- LAYOUT HERO FULL (Fallback) ---
-  // Só aparece se layout for 'full' OU se for algum tipo desconhecido
   return (
-    <section
-      className={`relative w-full overflow-hidden border-b-4 ${className}`}
-      style={{ backgroundColor: bg, borderColor: btnBg }}
-    >
-      {banner.imageUrl ? (
-        <div className="absolute inset-0">
-          <img src={banner.imageUrl} alt={banner.title} className="w-full h-full object-cover opacity-40" />
-          <div
-            className="absolute inset-0"
-            style={{ background: `linear-gradient(90deg, ${bg} 0%, ${bg}E6 50%, ${bg}99 100%)` }}
-          ></div>
-        </div>
-      ) : (
-        <div className="absolute inset-0" style={{ backgroundColor: bg }}></div>
-      )}
-
-      <div className="container mx-auto px-4 py-16 relative z-10">
-        <div className={`max-w-4xl ${banner.imagePosition === 'right' ? 'ml-auto text-right' : 'text-left'}`}>
-          <span
-            className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-wider rounded-full animate-pulse"
-            style={{ backgroundColor: btnBg, color: btnTxt }}
-          >
-            DESTAQUE
-          </span>
-          <h2
-            className="text-3xl md:text-5xl font-black uppercase italic tracking-tight mb-4 leading-tight"
-            style={{ color: txt }}
-          >
-            {banner.title}
-          </h2>
-          <p
-            className="text-lg md:text-xl font-medium mb-8 max-w-2xl leading-relaxed opacity-90"
-            style={{ color: txt, marginLeft: banner.imagePosition === 'right' ? 'auto' : '0' }}
-          >
-            {banner.description}
-          </p>
-          <Link
-            href={banner.ctaLink || '#'}
-            className="inline-flex items-center gap-2 px-8 py-4 text-lg font-bold transition-transform rounded-full shadow-lg hover:scale-105 active:scale-95"
-            style={{ backgroundColor: btnBg, color: btnTxt }}
-          >
-            {banner.ctaText || 'Acessar'}
-            <ArrowRight size={20} />
-          </Link>
+    <div className={`${className} w-full overflow-hidden`} style={{ backgroundColor: banner.bgColor }}>
+      <div className={`container mx-auto px-4 ${banner.layout === 'full' ? 'py-20 md:py-32' : 'py-12'}`}>
+        <div className={`flex flex-col md:flex-row items-center gap-12 ${banner.imagePosition === 'right' ? '' : 'md:flex-row-reverse'}`}>
+           <div className="flex-1 space-y-6 text-center md:text-left">
+              {banner.title && <h2 className="text-3xl md:text-5xl font-extrabold leading-tight" style={{ color: banner.textColor }}>{banner.title}</h2>}
+              {banner.description && <p className="text-lg opacity-90 leading-relaxed" style={{ color: banner.textColor }}>{banner.description}</p>}
+              {banner.ctaLink && (
+                  <Link href={banner.ctaLink} className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold shadow-lg hover:brightness-110 transition-all" style={{ backgroundColor: banner.btnColor, color: banner.btnTextColor }}>
+                    {banner.ctaText} <ArrowRight size={20} />
+                  </Link>
+              )}
+           </div>
+           {banner.imageUrl && (
+              <div className="flex-1 w-full max-w-xl">
+                 <img src={banner.imageUrl} alt={banner.title} className="w-full h-auto rounded-2xl shadow-2xl transform hover:scale-[1.02] transition-transform duration-500" />
+              </div>
+           )}
         </div>
       </div>
-    </section>
+    </div>
   );
 }
