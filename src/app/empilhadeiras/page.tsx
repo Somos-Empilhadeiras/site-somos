@@ -9,7 +9,7 @@ import {
   X
 } from 'lucide-react';
 
-import DynamicBanner from '@/components/DynamicBanner';
+import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import ItemCard from '@/components/ItemCard';
 import ModalItem from '@/components/ModalItem';
 import { Empilhadeira } from '@/types';
@@ -17,7 +17,7 @@ import { Empilhadeira } from '@/types';
 /* ===============================
    CONFIGURAÇÕES DO CATÁLOGO
 ================================ */
-const INITIAL_LIMIT = 4;
+const INITIAL_LIMIT = 8;
 const LOAD_MORE_COUNT = 8;
 const SEARCH_DEBOUNCE = 500;
 

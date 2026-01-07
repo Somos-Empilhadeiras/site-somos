@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/postgres';
 
+// --- GET: Listar Empilhadeiras ---
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     
-    // Parâmetros de Paginação
-    const limit = parseInt(searchParams.get('limit') || '100'); // Padrão alto se não informado
+    const limit = parseInt(searchParams.get('limit') || '100');
     const offset = parseInt(searchParams.get('offset') || '0');
     const search = searchParams.get('search') || '';
 
     let empilhadeiras;
 
     if (search) {
-      // Se tiver busca, filtra no banco (Case Insensitive com ILIKE)
       const searchPattern = `%${search}%`;
       empilhadeiras = await sql`
         SELECT * FROM empilhadeiras 
@@ -25,7 +24,6 @@ export async function GET(req: Request) {
         LIMIT ${limit} OFFSET ${offset}
       `;
     } else {
-      // Sem busca, traz paginado normal
       empilhadeiras = await sql`
         SELECT * FROM empilhadeiras 
         ORDER BY created_at ASC
@@ -33,7 +31,6 @@ export async function GET(req: Request) {
       `;
     }
     
-    // Retorna junto um metadado simples para saber se tem mais (opcional, mas útil)
     return NextResponse.json(empilhadeiras);
 
   } catch (error) {
@@ -42,35 +39,45 @@ export async function GET(req: Request) {
   }
 }
 
-// ... (Mantenha o POST, PUT e DELETE como estavam, não precisam mudar)
+// --- POST: Criar Empilhadeira ---
 export async function POST(req: Request) {
-    // ... seu código POST anterior
     try {
         const body = await req.json();
     
-        // Validação básica (opcional, mas recomendada)
-        if (!body.name || !body.brand || body.price === undefined || body.price === null) {
-          return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 });
+        if (!body.name) {
+          return NextResponse.json({ error: 'Nome é obrigatório' }, { status: 400 });
         }
     
-        // O postgres.js mapeia o objeto body para as colunas automaticamente se os nomes baterem.
-        // Se o seu front manda 'imageUrl' (camelCase) e o banco é 'image_url' (snake_case),
-        // precisamos ajustar o objeto antes de salvar.
-        
+        // CORREÇÃO: Tratamento especial para PRICE e numéricos
         const empilhadeiraData = {
           name: body.name,
-          brand: body.brand,
-          model: body.model,
-          year: body.year,
-          price: body.price,
-          capacity: body.capacity,
-          engine: body.engine,
-          voltage: body.voltage,
-          description: body.description,
-          image_url: body.imageUrl || '/placeholder.jpg', // Mapeando para o nome da coluna SQL
+          brand: body.brand || null,
+          model: body.model || null,
+          year: body.year || null,
+          
+          // AQUI ESTAVA O ERRO:
+          // Se body.price for 0, o "|| null" transformava em null.
+          // O "?? 0" garante que se for undefined/null vira 0, mas se for 0 permanece 0.
+          price: body.price ?? 0, 
+          
+          description: body.description || null,
+          image_url: body.imageUrl || body.image_url || null,
+          
+          // Dados Técnicos
+          capacity: body.capacity || null,
+          engine: body.engine || null,
+          voltage: body.voltage || null,
+
+          // Novos Campos Técnicos
+          lift_height: body.liftHeight || body.lift_height || null,
+          load_center: body.loadCenter || null,
+          battery_details: body.batteryDetails || null,
+          charger_type: body.chargerType || null,
+          technical_sheet_url: body.technicalSheetUrl || null,
+          
+          // REMOVIDO: type (pois não existe na tabela empilhadeiras)
         };
     
-        // 'sql(empilhadeiraData)' cria automaticamente a query (colunas) values (valores)
         const result = await sql`
           INSERT INTO empilhadeiras ${sql(empilhadeiraData)}
           RETURNING *
@@ -83,8 +90,8 @@ export async function POST(req: Request) {
       }
 }
 
+// --- PUT: Atualizar Empilhadeira ---
 export async function PUT(req: Request) {
-    // ... seu código PUT anterior
     try {
         const body = await req.json();
         const { id, ...rest } = body;
@@ -93,17 +100,34 @@ export async function PUT(req: Request) {
           return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
     
-        // Prepara dados para atualização (mapeando camelCase para snake_case se necessário)
-        const updateData: any = { ...rest };
-        if (updateData.imageUrl) {
-            updateData.image_url = updateData.imageUrl;
-            delete updateData.imageUrl; // Remove a chave antiga
-        }
-        
-        // Adiciona timestamp de atualização
-        updateData.updated_at = new Date();
+        const updateData = {
+            name: body.name,
+            brand: body.brand || null,
+            model: body.model || null,
+            year: body.year || null,
+            
+            // CORREÇÃO TAMBÉM NO PUT
+            price: body.price ?? 0,
+            
+            description: body.description || null,
+            image_url: body.imageUrl || body.image_url || null,
+            
+            capacity: body.capacity || null,
+            engine: body.engine || null,
+            voltage: body.voltage || null,
+
+            lift_height: body.liftHeight || body.lift_height || null,
+            load_center: body.loadCenter || null,
+            battery_details: body.batteryDetails || null,
+            charger_type: body.chargerType || null,
+            technical_sheet_url: body.technicalSheetUrl || null,
+
+            updated_at: new Date()
+        };
+
+        // Remove chaves estritamente undefined para segurança
+        Object.keys(updateData).forEach(key => (updateData as any)[key] === undefined && delete (updateData as any)[key]);
     
-        // Query de Update dinâmica usando postgres.js
         const result = await sql`
           UPDATE empilhadeiras
           SET ${sql(updateData)}
@@ -122,8 +146,8 @@ export async function PUT(req: Request) {
       }
 }
 
+// --- DELETE: Remover Empilhadeira ---
 export async function DELETE(req: Request) {
-    // ... seu código DELETE anterior
     try {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');

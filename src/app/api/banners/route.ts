@@ -20,23 +20,37 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // Mapeamento EXATO para sua tabela 'banners'
+    // Mapeamento EXATO: Lê o que vem do front (snake_case) e prepara para o banco
+    // O operador || null garante que undefined vire null (evita o erro da API)
     const newBanner = {
       name: body.name,
-      ids: body.ids || [], // Postgres.js converte array JS p/ array Text[] automaticamente
-      is_active: body.isActive,
+      ids: body.ids || [],
+      is_active: body.is_active ?? true, // Lê is_active (do front atualizado)
       layout: body.layout,
-      title: body.title,
-      description: body.description,
-      image_url: body.imageUrl,
-      cta_text: body.ctaText,
-      cta_link: body.ctaLink,
-      carousel_items: sql.json(body.carouselItems || []), // Converte para JSONB
-      bg_color: body.bgColor,
-      text_color: body.textColor,
-      btn_color: body.btnColor,         // Adicionado conforme sua tabela
-      btn_text_color: body.btnTextColor, // Adicionado conforme sua tabela
-      image_position: body.imagePosition
+      
+      title: body.title || null,
+      description: body.description || null,
+      image_url: body.image_url || null, // Lê image_url
+      cta_text: body.cta_text || null,   // Lê cta_text
+      cta_link: body.cta_link || null,   // Lê cta_link
+      
+      carousel_items: sql.json(body.carousel_items || []), 
+      
+      bg_color: body.bg_color || null,
+      text_color: body.text_color || null,
+      btn_color: body.btn_color || null,
+      btn_text_color: body.btn_text_color || null,
+      image_position: body.image_position || 'left',
+
+      // --- NOVOS CAMPOS (Correção definitiva) ---
+      height: body.height || 'h-[80vh]',
+      content_align: body.content_align || 'left',
+      text_size: body.text_size || 'medium',
+      slide_duration: body.slide_duration || 5,
+      title_color: body.title_color || null,
+      desc_color: body.desc_color || null,
+      sec_btn_color: body.sec_btn_color || null,
+      sec_btn_text_color: body.sec_btn_text_color || null
     };
 
     const result = await sql`
@@ -59,26 +73,41 @@ export async function PUT(req: Request) {
 
     if (!targetId) return NextResponse.json({ error: 'ID obrigatório' }, { status: 400 });
 
+    // Mesmo mapeamento do POST
     const updateData = {
       name: body.name,
       ids: body.ids || [],
-      is_active: body.isActive,
+      is_active: body.is_active,
       layout: body.layout,
-      title: body.title,
-      description: body.description,
-      image_url: body.imageUrl,
-      cta_text: body.ctaText,
-      cta_link: body.ctaLink,
-      carousel_items: sql.json(body.carouselItems || []),
-      bg_color: body.bgColor,
-      text_color: body.textColor,
-      btn_color: body.btnColor,
-      btn_text_color: body.btnTextColor,
-      image_position: body.imagePosition,
+      
+      title: body.title || null,
+      description: body.description || null,
+      image_url: body.image_url || null,
+      cta_text: body.cta_text || null,
+      cta_link: body.cta_link || null,
+      
+      carousel_items: sql.json(body.carousel_items || []),
+      
+      bg_color: body.bg_color || null,
+      text_color: body.text_color || null,
+      btn_color: body.btn_color || null,
+      btn_text_color: body.btn_text_color || null,
+      image_position: body.image_position || 'left',
+
+      // Novos Campos
+      height: body.height,
+      content_align: body.content_align,
+      text_size: body.text_size,
+      slide_duration: body.slide_duration,
+      title_color: body.title_color,
+      desc_color: body.desc_color,
+      sec_btn_color: body.sec_btn_color,
+      sec_btn_text_color: body.sec_btn_text_color,
+
       updated_at: new Date()
     };
 
-    // Remove campos undefined
+    // Remove chaves que sejam estritamente undefined (mas mantemos nulls intencionais acima)
     Object.keys(updateData).forEach(key => (updateData as any)[key] === undefined && delete (updateData as any)[key]);
 
     const result = await sql`

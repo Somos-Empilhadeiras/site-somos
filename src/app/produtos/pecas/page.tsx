@@ -10,7 +10,7 @@ import {
   Wrench // Ícone de chave inglesa
 } from 'lucide-react';
 
-import DynamicBanner from '@/components/DynamicBanner';
+import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import ItemCard from '@/components/ItemCard';
 import ModalItem from '@/components/ModalItem';
 import { Product } from '@/types';

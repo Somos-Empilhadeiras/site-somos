@@ -36,11 +36,9 @@ interface BannerData {
   btnTextColor: string;
   
   imagePosition: 'left' | 'right';
-  
-  // Carrossel
   carouselItems: CarouselItem[];
   
-  // Personalização Avançada (Novos Campos)
+  // Personalização Avançada
   height?: string;
   contentAlign?: 'left' | 'center' | 'right';
   textSize?: 'small' | 'medium' | 'large';
@@ -67,7 +65,8 @@ export default function DynamicBanner({ id, className = '' }: Props) {
   useEffect(() => {
     async function fetchBanner() {
       try {
-        const res = await fetch('/api/banners'); 
+        // cache: 'no-store' é vital para ver as alterações de cor imediatamente
+        const res = await fetch('/api/banners', { cache: 'no-store' }); 
         const data: any[] = await res.json();
 
         const found = data.find((b: any) => {
@@ -77,28 +76,51 @@ export default function DynamicBanner({ id, className = '' }: Props) {
         });
 
         if (found) {
-             // Mapeia os dados do backend para o frontend, garantindo valores padrão
+             // Tratamento de segurança para os Slides (JSON vs String vs Array)
+             let safeSlides: CarouselItem[] = [];
+             try {
+                 if (Array.isArray(found.carousel_items)) safeSlides = found.carousel_items;
+                 else if (Array.isArray(found.carouselItems)) safeSlides = found.carouselItems;
+                 else if (typeof found.carousel_items === 'string') safeSlides = JSON.parse(found.carousel_items);
+             } catch (e) { 
+                 console.error("Erro ao parsear slides:", e);
+                 safeSlides = []; 
+             }
+
+             // Mapeamento BLINDADO (Snake_case -> CamelCase)
              setBanner({
-                ...found,
-                // Garante arrays e objetos
-                carouselItems: found.carousel_items || found.carouselItems || [],
+                id: found.id,
                 ids: found.ids || [],
+                isActive: true,
+                layout: found.layout,
                 
-                // Defaults de Estilo
+                title: found.title,
+                description: found.description,
+                imageUrl: found.image_url || found.imageUrl,
+                ctaText: found.cta_text || found.ctaText,
+                ctaLink: found.cta_link || found.ctaLink,
+                
+                imagePosition: found.image_position || found.imagePosition || 'left',
+                carouselItems: safeSlides,
+                
+                // Mapeamento de Estilos (Lê do banco OU do padrão)
                 height: found.height || 'h-[80vh]', 
-                contentAlign: found.contentAlign || 'left',
-                textSize: found.textSize || 'medium',
-                slideDuration: found.slideDuration || 5,
+                // AQUI ESTAVA O PROBLEMA: O banco manda 'content_align', o front espera 'contentAlign'
+                contentAlign: found.content_align || found.contentAlign || 'left',
+                textSize: found.text_size || found.textSize || 'medium',
+                slideDuration: found.slide_duration || found.slideDuration || 5,
                 
-                // Defaults de Cor
+                // Mapeamento de Cores
                 bgColor: found.bg_color || found.bgColor || '#005831',
                 textColor: found.text_color || found.textColor || '#ffffff',
-                titleColor: found.titleColor || '#ffffff',
-                descColor: found.descColor || '#e2e8f0',
+                titleColor: found.title_color || found.titleColor || '#ffffff',
+                descColor: found.desc_color || found.descColor || '#e2e8f0',
+                
                 btnColor: found.btn_color || found.btnColor || '#005831',
                 btnTextColor: found.btn_text_color || found.btnTextColor || '#ffffff',
-                secBtnColor: found.secBtnColor || '#ffffff',
-                secBtnTextColor: found.secBtnTextColor || '#000000',
+                
+                secBtnColor: found.sec_btn_color || found.secBtnColor || '#ffffff',
+                secBtnTextColor: found.sec_btn_text_color || found.secBtnTextColor || '#000000',
              });
         } else {
             setBanner(null);
@@ -125,7 +147,6 @@ export default function DynamicBanner({ id, className = '' }: Props) {
 
   useEffect(() => {
     if (banner?.layout === 'carousel' && banner.carouselItems.length > 1) {
-        // Usa o tempo configurado ou 5 segundos como fallback
         const intervalTime = (banner.slideDuration || 5) * 1000;
         const timer = setInterval(nextSlide, intervalTime); 
         return () => clearInterval(timer);
@@ -135,12 +156,11 @@ export default function DynamicBanner({ id, className = '' }: Props) {
   if (!banner || !isVisible) return null;
 
   // --- HELPER DE ESTILOS ---
-  // Define tamanhos de texto baseados na configuração
   const getTextSizes = (size: string = 'medium') => {
       switch(size) {
-          case 'small': return { title: 'text-3xl md:text-5xl', desc: 'text-base md:text-lg' };
+          case 'small': return { title: 'text-3xl md:text-4xl', desc: 'text-base md:text-lg' };
           case 'large': return { title: 'text-5xl md:text-7xl lg:text-8xl', desc: 'text-xl md:text-3xl' };
-          default: return { title: 'text-4xl md:text-6xl lg:text-7xl', desc: 'text-lg md:text-2xl' };
+          default: return { title: 'text-4xl md:text-6xl lg:text-7xl', desc: 'text-lg md:text-2xl' }; // Medium
       }
   };
 
@@ -156,7 +176,8 @@ export default function DynamicBanner({ id, className = '' }: Props) {
       }[banner.contentAlign || 'left'];
 
       return (
-        <div className={`relative w-full overflow-hidden bg-slate-900 group min-h-[60vh] md:min-h-[85vh] ${className}`} style={{ height: banner.height === 'h-screen' ? '100vh' : undefined }}>
+        // min-h-[80vh] garante o tamanho grande que você pediu
+        <div className={`relative w-full overflow-hidden bg-slate-900 group min-h-[60vh] md:min-h-[80vh] ${className}`} style={{ height: banner.height === 'h-screen' ? '100vh' : undefined }}>
              
              {banner.carouselItems.map((item, index) => (
                  <div 
@@ -177,7 +198,7 @@ export default function DynamicBanner({ id, className = '' }: Props) {
                             <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500">Sem Imagem</div>
                          )}
                          
-                         {/* Overlay Gradiente Inteligente */}
+                         {/* Overlay Gradiente Inteligente baseado no alinhamento */}
                          <div className={`absolute inset-0 bg-gradient-to-r ${
                              banner.contentAlign === 'right' 
                                 ? 'from-transparent via-black/40 to-black/90' 
@@ -191,7 +212,7 @@ export default function DynamicBanner({ id, className = '' }: Props) {
                      <div className={`relative z-20 container mx-auto px-6 h-full flex flex-col justify-center ${alignClasses}`}>
                          <div className="max-w-4xl space-y-6 animate-in slide-in-from-bottom-10 duration-1000 fade-in fill-mode-forwards pt-20">
                              
-                             {/* Título */}
+                             {/* Título com Cor Personalizada */}
                              {item.title && (
                                  <h2 
                                     className={`${textSizes.title} font-extrabold leading-tight drop-shadow-2xl`}
@@ -201,7 +222,7 @@ export default function DynamicBanner({ id, className = '' }: Props) {
                                  </h2>
                              )}
                              
-                             {/* Descrição */}
+                             {/* Descrição com Cor Personalizada */}
                              {item.description && (
                                  <p 
                                     className={`${textSizes.desc} font-medium drop-shadow-lg max-w-3xl leading-relaxed opacity-90`}

@@ -10,7 +10,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-import DynamicBanner from '@/components/DynamicBanner';
+import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import ItemCard from '@/components/ItemCard';
 import ModalItem from '@/components/ModalItem';
 import { Empilhadeira } from '@/types';

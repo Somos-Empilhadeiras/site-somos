@@ -46,7 +46,7 @@ export default function JobDetailsModal({ job, onClose }: Props) {
     )}`;
 
     return (
-        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-9999 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
 
             {/* CONTAINER MODAL */}
             <div className="bg-white w-full max-w-2xl max-h-[90vh] flex flex-col rounded-xl shadow-2xl animate-in fade-in zoom-in duration-200">

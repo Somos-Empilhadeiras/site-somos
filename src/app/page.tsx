@@ -9,7 +9,7 @@ import {
   Building2, Leaf
 } from 'lucide-react';
 import BrazilMap from '../components/BrazilMap';
-import DynamicBanner from '@/components/DynamicBanner';
+import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import HomeUnitsSection from '@/components/HOmeUnitsSection';
 
 // DADOS DO SLIDER
@@ -104,7 +104,7 @@ export default function Home() {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
                 <div className="aspect-[4/3] bg-slate-100">
                   <img
-                    src="https://images.unsplash.com/photo-1628148818278-42289c037803?q=80&w=2070&auto=format&fit=crop"
+                    src="/images/heli-brasil.png"
                     alt="Empilhadeira HELI"
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                   />

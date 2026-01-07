@@ -48,17 +48,26 @@ export interface AdminItem {
   price: number;
   description: string;
   image_url: string;
+  quantity?: number;
+  type?: 'MACHINE' | 'PART' | 'TIRE' | 'SERVICE';
+
+  // Campos de Máquinas (Antigos + Novos)
   brand?: string;
   model?: string;
-  year?: string | number;
+  year?: number;
   capacity?: number;
   engine?: string;
   voltage?: number;
+  lift_height?: string;       // Novo: Elevação
+  loadCenter?: number;       // Novo: Centro de Carga
+  batteryDetails?: string;   // Novo: Detalhes Bateria
+  chargerType?: string;      // Novo: Tipo Carregador
+  technicalSheetUrl?: string;// Novo: PDF
+
+  // Campos de Peças/Pneus/Serviços
   manufacturer?: string;
-  quantity?: number;
   application?: string;
   serviceType?: string;
-  type?: 'MACHINE' | 'PART' | 'TIRE' | 'SERVICE';
 }
 
 export interface JobVacancy {

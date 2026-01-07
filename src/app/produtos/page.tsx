@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 import ItemCard from '@/components/ItemCard'; 
-import DynamicBanner from '@/components/DynamicBanner';
+import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import { Empilhadeira } from '@/types'; 
 
 // ======================================================

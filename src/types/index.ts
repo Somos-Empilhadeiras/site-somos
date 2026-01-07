@@ -6,20 +6,31 @@ export interface Empilhadeira {
   description: string;
   price: number;
   imageUrl: string;
-  
+
   // Campos específicos de Máquinas (Empilhadeiras)
   brand?: string;
   model?: string;
   year?: string;
-  capacity?: number; // Kg
-  engine?: string;
-  voltage?: number;
+
+  // Especificações Técnicas (Baseado nas imagens)
+  capacity?: number;       // Carga (kg) - ex: 3000
+  loadCenter?: number;     // Centro de Carga (mm) - ex: 500
+  lift_height?: string;     // Elevação dos Garfos - ex: "Até 7000mm" ou "6 metros"
+
+  // Motorização / Energia
+  engine?: string;         // Tipo: "Elétrica", "Combustão", "GLP"
+  voltage?: number;        // Tensão (V) - ex: 48, 80
+  batteryDetails?: string; // Detalhes Bateria - ex: "80V/230-280Ah"
+  chargerType?: string;    // Carregador - ex: "Embutido 220V" ou "Externo"
+
+  // Arquivos
+  technicalSheetUrl?: string; // Link para PDF da Ficha Técnica
 
   // Campos específicos de Peças/Produtos
   manufacturer?: string;
   quantity?: number;
-  
-  type?: 'MACHINE' | 'PART' | 'SERVICE' | 'TIRE'; 
+
+  type?: 'MACHINE' | 'PART' | 'SERVICE' | 'TIRE';
 }
 
 export type Product = Empilhadeira;
