@@ -67,7 +67,7 @@ export default function DynamicBanner({ id, className = '' }: Props) {
   const [isVisible, setIsVisible] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-// --- 1. BUSCA DADOS (VERSÃO CORRIGIDA E BLINDADA) ---
+  // --- 1. BUSCA DADOS (VERSÃO CORRIGIDA E BLINDADA) ---
   useEffect(() => {
     async function fetchBannerAndProducts() {
       try {
@@ -84,9 +84,9 @@ export default function DynamicBanner({ id, className = '' }: Props) {
 
         // 2. ORDENAÇÃO FORÇADA: O mais novo (maior ID) fica por último
         candidates.sort((a: any, b: any) => {
-            if (a.id < b.id) return -1;
-            if (a.id > b.id) return 1;
-            return 0;
+          if (a.id < b.id) return -1;
+          if (a.id > b.id) return 1;
+          return 0;
         });
 
         // 3. Pega o último da lista (O Vencedor)
@@ -98,11 +98,11 @@ export default function DynamicBanner({ id, className = '' }: Props) {
           try {
             // Tenta pegar de todas as formas possíveis que o banco pode mandar
             const rawSlides = found.carousel_items || found.carouselItems;
-            
+
             if (Array.isArray(rawSlides)) {
-                safeSlides = rawSlides;
+              safeSlides = rawSlides;
             } else if (typeof rawSlides === 'string') {
-                safeSlides = JSON.parse(rawSlides);
+              safeSlides = JSON.parse(rawSlides);
             }
           } catch (e) {
             console.error("Erro parsing slides:", e);
@@ -113,13 +113,13 @@ export default function DynamicBanner({ id, className = '' }: Props) {
           try {
             const rawIds = found.product_ids || found.productIds;
             if (Array.isArray(rawIds)) {
-                safeProductIds = rawIds.map(String);
+              safeProductIds = rawIds.map(String);
             } else if (typeof rawIds === 'string') {
-                if (rawIds.startsWith('[')) {
-                    safeProductIds = JSON.parse(rawIds).map(String);
-                } else {
-                    safeProductIds = rawIds.split(',').map((s: string) => s.trim());
-                }
+              if (rawIds.startsWith('[')) {
+                safeProductIds = JSON.parse(rawIds).map(String);
+              } else {
+                safeProductIds = rawIds.split(',').map((s: string) => s.trim());
+              }
             }
           } catch (e) {
             console.error("Erro parsing productIds:", e);
@@ -136,11 +136,11 @@ export default function DynamicBanner({ id, className = '' }: Props) {
             imageUrl: found.image_url || found.imageUrl,
             ctaText: found.cta_text || found.ctaText,
             ctaLink: found.cta_link || found.ctaLink,
-            
+
             // Dados tratados
             productIds: safeProductIds,
             carouselItems: safeSlides,
-            
+
             imagePosition: found.image_position || found.imagePosition || 'left',
             height: found.height || 'h-[80vh]',
             contentAlign: found.content_align || found.contentAlign || 'left',
@@ -202,27 +202,68 @@ export default function DynamicBanner({ id, className = '' }: Props) {
   }, [banner, nextSlide]);
 
   if (!banner || !isVisible) return null;
-  
+
   const textSizes = {
     small: { title: 'text-3xl md:text-4xl', desc: 'text-base md:text-lg' },
     medium: { title: 'text-4xl md:text-6xl lg:text-7xl', desc: 'text-lg md:text-2xl' },
     large: { title: 'text-5xl md:text-7xl lg:text-8xl', desc: 'text-xl md:text-3xl' }
   }[banner.textSize || 'medium'];
 
-  // === 1. VITRINE ===
+  console.log('ESTRUTURA DO BANNER:', banner);
+
+// === 1. VITRINE ===
   if (banner.layout === 'product_grid') {
+    
+    // 1. Extraindo as cores corretas baseadas no seu Console Log
+    const bgColor = banner.bgColor || '#15803d';           // Cor do Fundo
+    const titleColor = banner.titleColor || '#0f172a';     // Cor do Título
+    const descColor = banner.descColor || '#334155';       // Cor da Descrição
+    const align = banner.contentAlign || 'center';         // Alinhamento (left, center, right)
+
+    // Ajuste para a barra decorativa (usa a cor do título ou do texto geral)
+    const decorColor = titleColor || banner.textColor || '#000';
+
     return (
-      <section className={`w-full py-16 md:py-24 bg-green-700 ${className}`}>
+      <section 
+        className={`w-full py-16 md:py-24 ${className}`}
+        // AQUI: Aplica a cor de fundo do banco (#58FEB3)
+        style={{ backgroundColor: bgColor }} 
+      >
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">{banner.title}</h2>
-            {banner.description && <p className="text-slate-600 text-lg leading-relaxed">{banner.description}</p>}
-            <div className="w-20 h-1.5 bg-green-700 mx-auto mt-6 rounded-full opacity-80"></div>
+          <div 
+            className="mb-12 max-w-3xl mx-auto"
+            // AQUI: Aplica o alinhamento (left/center/right)
+            style={{ textAlign: align }} 
+          >
+            <h2 
+              className="text-3xl md:text-4xl font-bold mb-4"
+              // AQUI: Aplica a cor do título (#e00000 ou #FFFFFF)
+              style={{ color: titleColor }} 
+            >
+              {banner.title}
+            </h2>
+            
+            {banner.description && (
+              <p 
+                className="text-lg leading-relaxed"
+                // AQUI: Aplica a cor da descrição (#e2e8f0)
+                style={{ color: descColor }}
+              >
+                {banner.description}
+              </p>
+            )}
+            
+            {/* Barra decorativa que acompanha o alinhamento */}
+            <div 
+              className={`w-20 h-1.5 mt-6 rounded-full opacity-60 ${align === 'center' ? 'mx-auto' : ''}`}
+              style={{ backgroundColor: decorColor }} 
+            ></div>
           </div>
+
           {products.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-8">
               {products.map((product) => (
-                <Link href={`/empilhadeiras/${product.id}`} key={product.id} className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 w-full max-w-[320px] overflow-hidden border border-slate-100 flex flex-col">
+                <Link href={`/empilhadeiras/${product.id}`} key={product.id} className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 w-full max-w-[320px] overflow-hidden border border-slate-100 flex flex-col text-left">
                   <div className="bg-slate-100/60 p-6 h-64 flex items-center justify-center relative">
                     {product.image_url ? (
                       <img src={product.image_url} alt={product.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" />
@@ -254,18 +295,17 @@ export default function DynamicBanner({ id, className = '' }: Props) {
       </section>
     );
   }
-
   // === 2. CARROSSEL (CORRIGIDO) ===
   if (banner.layout === 'carousel') {
     // Se não tiver slides, mostra um estado de aviso em vez de sumir
     if (!banner.carouselItems || banner.carouselItems.length === 0) {
-        return (
-            <div className={`w-full h-[40vh] bg-slate-900 flex flex-col items-center justify-center text-white ${className}`}>
-                <ImageIcon size={48} className="opacity-50 mb-4" />
-                <h3 className="text-xl font-bold">Carrossel Vazio</h3>
-                <p className="text-slate-400">Adicione slides no Painel Administrativo.</p>
-            </div>
-        );
+      return (
+        <div className={`w-full h-[40vh] bg-slate-900 flex flex-col items-center justify-center text-white ${className}`}>
+          <ImageIcon size={48} className="opacity-50 mb-4" />
+          <h3 className="text-xl font-bold">Carrossel Vazio</h3>
+          <p className="text-slate-400">Adicione slides no Painel Administrativo.</p>
+        </div>
+      );
     }
 
     const alignClasses = {
@@ -298,7 +338,7 @@ export default function DynamicBanner({ id, className = '' }: Props) {
               <div className="max-w-4xl space-y-6 pt-20">
                 {item.title && <h2 className={`${textSizes.title} font-extrabold leading-tight drop-shadow-2xl`} style={{ color: banner.titleColor }}>{item.title}</h2>}
                 {item.description && <p className={`${textSizes.desc} font-medium drop-shadow-lg max-w-3xl leading-relaxed opacity-90`} style={{ color: banner.descColor }}>{item.description}</p>}
-                
+
                 <div className={`pt-8 flex flex-wrap gap-4 ${banner.contentAlign === 'center' ? 'justify-center' : banner.contentAlign === 'right' ? 'justify-end' : 'justify-start'}`}>
                   {item.link && (
                     <Link href={item.link} className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:-translate-y-1 shadow-xl hover:shadow-2xl" style={{ backgroundColor: banner.btnColor, color: banner.btnTextColor }}>
@@ -315,20 +355,20 @@ export default function DynamicBanner({ id, className = '' }: Props) {
             </div>
           </div>
         ))}
-        
+
         {/* Setas de Navegação (Aparecem só se tiver > 1 slide) */}
         {banner.carouselItems.length > 1 && (
-           <>
-             <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full z-30 transition-all hover:scale-110"><ChevronLeft size={40} /></button>
-             <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full z-30 transition-all hover:scale-110"><ChevronRight size={40} /></button>
-             
-             {/* Bolinhas indicadoras */}
-             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-3">
-               {banner.carouselItems.map((_, idx) => (
-                 <button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-3 rounded-full transition-all duration-500 shadow-sm ${idx === currentSlide ? 'w-12 ring-2 ring-white/50' : 'bg-white/40 w-3 hover:bg-white'}`} style={{ backgroundColor: idx === currentSlide ? banner.btnColor : undefined }} />
-               ))}
-             </div>
-           </>
+          <>
+            <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full z-30 transition-all hover:scale-110"><ChevronLeft size={40} /></button>
+            <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full z-30 transition-all hover:scale-110"><ChevronRight size={40} /></button>
+
+            {/* Bolinhas indicadoras */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+              {banner.carouselItems.map((_, idx) => (
+                <button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-3 rounded-full transition-all duration-500 shadow-sm ${idx === currentSlide ? 'w-12 ring-2 ring-white/50' : 'bg-white/40 w-3 hover:bg-white'}`} style={{ backgroundColor: idx === currentSlide ? banner.btnColor : undefined }} />
+              ))}
+            </div>
+          </>
         )}
       </div>
     );
