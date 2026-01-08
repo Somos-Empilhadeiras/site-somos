@@ -47,7 +47,62 @@ export interface BannerConfig {
   contentAlign?: 'left' | 'center' | 'right';
 }
 
-// ... (Restante do arquivo: AdminItem, JobVacancy, SLOT_GROUPS podem ficar igual)
+// === AQUI ESTÁ A CORREÇÃO DO ADMINITEM ===
+export interface AdminItem {
+  id?: string;
+  name: string;
+  description: string;
+  image_url: string;
+  
+  // Financeiro/Estoque
+  price: number;
+  quantity?: number;
+  
+  // Classificação
+  type?: 'MACHINE' | 'PART' | 'TIRE' | 'SERVICE';
+  category?: string;
+
+  // Máquinas (Geral)
+  brand?: string;
+  model?: string;
+  year?: string | number;
+  capacity?: number;
+  engine?: string;
+  
+  // Máquinas (Elétricas/Detalhes)
+  voltage?: number;
+  lift_height?: string;
+  chargerType?: string;
+  batteryDetails?: string;
+  technicalSheetUrl?: string;
+  
+  // --- ADICIONE ESTA LINHA ABAIXO ---
+  loadCenter?: number; 
+
+  // Peças/Pneus
+  manufacturer?: string;
+  application?: string;
+
+  // Serviços
+  serviceType?: string;
+}
+
+export interface JobVacancy {
+  id?: string;
+  title: string;
+  vacancyType: string;
+  workSchedule: string;
+  location: string;
+  remuneration: string;
+  requirements: string[];
+  activities: string[];
+  benefits: string[];
+  imageUrl?: string;
+  educationLevel: string;
+  observations?: string;
+  isActive: boolean;
+}
+
 // Se precisar do SLOT_GROUPS me avise, mas a interface acima é a crítica.
 export const SLOT_GROUPS = {
   'Página Inicial': [
