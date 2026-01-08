@@ -1,5 +1,4 @@
 'use client';
-import { AdminItem } from '@/types/admin';
 import ImageUpload from '../ui/ImageUpload';
 import { Save, X, Gauge, Zap, FileText } from 'lucide-react';
 
