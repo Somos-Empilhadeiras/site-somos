@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Megaphone, Plus, Trash2, CheckCircle, EyeOff, Edit } from 'lucide-react';
+import { Megaphone, Plus, Trash2, CheckCircle, Edit } from 'lucide-react';
 import { BannerConfig } from '@/types/admin';
 import BannerForm from './BannerForm';
 
@@ -10,14 +10,13 @@ export default function BannerManager() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
 
-    // Estado inicial com todos os campos novos
     const initialBannerState: BannerConfig = {
         ids: [], name: '', isActive: true, layout: 'carousel',
         title: '', description: '',
         imageUrl: '', ctaText: 'Saiba Mais', ctaLink: '', 
         carouselItems: [],
+        productIds: [], // Importante inicializar vazio
         bgColor: '#005831', textColor: '#FFFFFF', btnColor: '#EAB308', btnTextColor: '#005831', imagePosition: 'left',
-        // Defaults novos
         height: 'h-[80vh]', contentAlign: 'left', textSize: 'medium', slideDuration: 5,
         titleColor: '#ffffff', descColor: '#e2e8f0', secBtnColor: '#ffffff', secBtnTextColor: '#000000'
     };
@@ -26,24 +25,43 @@ export default function BannerManager() {
 
     const fetchBanners = async () => {
         try {
-            // ADICIONADO: { cache: 'no-store' } para evitar dados velhos
             const res = await fetch('/api/banners', { cache: 'no-store' });
             const data = await res.json();
             
             const listToMap = Array.isArray(data) ? data : []; 
 
             const formatted = listToMap.map((b: any) => {
-                // CORREÇÃO CRÍTICA: Parsing seguro do JSON de slides
+                // --- CORREÇÃO AQUI: LER AMBOS OS FORMATOS (SNAKE E CAMEL) ---
                 let parsedSlides = [];
                 try {
-                    if (Array.isArray(b.carousel_items)) {
-                        parsedSlides = b.carousel_items;
-                    } else if (typeof b.carousel_items === 'string') {
-                        parsedSlides = JSON.parse(b.carousel_items);
+                    // Pega o que vier: carousel_items OU carouselItems
+                    const rawSlides = b.carousel_items || b.carouselItems;
+
+                    if (Array.isArray(rawSlides)) {
+                        parsedSlides = rawSlides;
+                    } else if (typeof rawSlides === 'string') {
+                        parsedSlides = JSON.parse(rawSlides);
                     }
                 } catch (e) {
                     console.error("Erro ao ler slides:", e);
                     parsedSlides = [];
+                }
+
+                // --- PARSE PARA PRODUTOS (MANTIDO IGUAL) ---
+                let parsedProducts: string[] = [];
+                try {
+                    const rawProd = b.productIds || b.product_ids;
+                    if (Array.isArray(rawProd)) {
+                        parsedProducts = rawProd.map(String);
+                    } else if (typeof rawProd === 'string') {
+                        if (rawProd.startsWith('[')) {
+                             parsedProducts = JSON.parse(rawProd).map(String);
+                        } else {
+                             parsedProducts = rawProd.split(',').map((s:string) => s.trim());
+                        }
+                    }
+                } catch (e) {
+                    console.error("Erro ao ler produtos:", e);
                 }
 
                 return {
@@ -53,13 +71,15 @@ export default function BannerManager() {
                     isActive: b.is_active !== undefined ? b.is_active : b.isActive,
                     layout: b.layout || 'carousel',
                     
+                    productIds: parsedProducts,
+
                     title: b.title,
                     description: b.description,
                     ctaText: b.cta_text || b.ctaText,
                     ctaLink: b.cta_link || b.ctaLink,
                     imageUrl: b.image_url || b.imageUrl,
                     
-                    // Usa o JSON tratado
+                    // AGORA SIM: Usa a variável que leu os dois formatos
                     carouselItems: parsedSlides,
                     
                     bgColor: b.bg_color || b.bgColor,
@@ -68,7 +88,6 @@ export default function BannerManager() {
                     btnTextColor: b.btn_text_color || b.btnTextColor,
                     imagePosition: b.image_position || b.imagePosition,
                     
-                    // Novos campos (Lê snake_case do banco ou usa default)
                     height: b.height || 'h-[80vh]',
                     contentAlign: b.content_align || 'left',
                     textSize: b.text_size || 'medium',
@@ -108,28 +127,27 @@ export default function BannerManager() {
         e.preventDefault();
         setLoading(true);
         try {
-            // Prepara payload para o banco (snake_case)
             const dbPayload = {
                 name: formData.name,
                 ids: formData.ids,
                 is_active: formData.isActive,
                 layout: formData.layout,
                 
+                // Envia os IDs selecionados
+                product_ids: formData.productIds || [], 
+                
                 title: formData.title,
                 description: formData.description,
                 image_url: formData.imageUrl,
                 cta_text: formData.ctaText,
                 cta_link: formData.ctaLink,
-                
-                carousel_items: formData.carouselItems, // Envia array direto
+                carousel_items: formData.carouselItems, 
                 
                 bg_color: formData.bgColor,
                 text_color: formData.textColor,
                 btn_color: formData.btnColor,
                 btn_text_color: formData.btnTextColor,
                 image_position: formData.imagePosition,
-
-                // Novos Campos
                 height: formData.height,
                 content_align: formData.contentAlign,
                 text_size: formData.textSize,
@@ -164,7 +182,6 @@ export default function BannerManager() {
     };
 
     const activeBanners = banners.filter(b => b.isActive);
-    const inactiveBanners = banners.filter(b => !b.isActive);
 
     return (
         <div className="space-y-6">
@@ -198,7 +215,6 @@ export default function BannerManager() {
                             </div>
                         ))}
                     </div>
-                    {/* Banners Inativos omitidos para brevidade, manter igual */}
                 </div>
             </div>
         </div>

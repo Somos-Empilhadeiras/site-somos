@@ -1,3 +1,5 @@
+// src/types/admin.ts
+
 export interface CarouselItem {
   title: string;
   description: string;
@@ -6,7 +8,7 @@ export interface CarouselItem {
   buttonText?: string;
   secondaryButtonText?: string;
   secondaryButtonLink?: string;
-  secondaryButtonTransparent?: boolean; // Se true, o botão é outline/transparente
+  secondaryButtonTransparent?: boolean;
 }
 
 export interface BannerConfig {
@@ -14,78 +16,39 @@ export interface BannerConfig {
   ids: string[];
   name: string;
   isActive: boolean;
-  layout: 'full' | 'compact' | 'alert' | 'carousel';
+  
+  // O layout precisa incluir 'product_grid'
+  layout: 'full' | 'compact' | 'alert' | 'carousel' | 'product_grid';
+  
   title: string;
   description: string;
   imageUrl: string;
   ctaText: string;
   ctaLink: string;
   carouselItems: CarouselItem[];
+  
+  // ESTE CAMPO É OBRIGATÓRIO PARA A VITRINE FUNCIONAR
+  productIds?: string[]; 
+
   bgColor: string;
   textColor: string;
   btnColor: string;
   btnTextColor: string;
   imagePosition: 'left' | 'right';
-  textSize?: 'small' | 'medium' | 'large'; // Tamanho do texto
-  slideDuration?: number; // Tempo em segundos (ex: 5, 8, 10)
+  textSize?: 'small' | 'medium' | 'large';
+  slideDuration?: number;
   
-  // Cores específicas
   titleColor?: string;
   descColor?: string;
-  
-  // Botão Secundário (Global ou padrão)
   secBtnColor?: string;
   secBtnTextColor?: string;
   
-  // Mantemos height e contentAlign do passo anterior
   height?: string;
   contentAlign?: 'left' | 'center' | 'right';
 }
 
-export interface AdminItem {
-  id?: string;
-  name: string;
-  price: number;
-  description: string;
-  image_url: string;
-  quantity?: number;
-  type?: 'MACHINE' | 'PART' | 'TIRE' | 'SERVICE';
-
-  // Campos de Máquinas (Antigos + Novos)
-  brand?: string;
-  model?: string;
-  year?: number;
-  capacity?: number;
-  engine?: string;
-  voltage?: number;
-  lift_height?: string;       // Novo: Elevação
-  loadCenter?: number;       // Novo: Centro de Carga
-  batteryDetails?: string;   // Novo: Detalhes Bateria
-  chargerType?: string;      // Novo: Tipo Carregador
-  technicalSheetUrl?: string;// Novo: PDF
-
-  // Campos de Peças/Pneus/Serviços
-  manufacturer?: string;
-  application?: string;
-  serviceType?: string;
-}
-
-export interface JobVacancy {
-  id?: string;
-  title: string;
-  vacancyType: string;
-  workSchedule: string;
-  location: string;
-  remuneration: string;
-  requirements: string[];
-  activities: string[];
-  benefits: string[];
-  imageUrl?: string;
-  educationLevel: string;
-  observations?: string;
-  isActive: boolean;
-}
-
+// ... (Restante do arquivo: AdminItem, JobVacancy, SLOT_GROUPS podem ficar igual)
+// Se precisar do SLOT_GROUPS me avise, mas a interface acima é a crítica.
 export const SLOT_GROUPS = {
   'Página Inicial': [
       { value: 'home-topo', label: 'Topo (Aviso)' },
@@ -115,5 +78,4 @@ export const SLOT_GROUPS = {
       { value: 'servicos-topo', label: 'Serviços - Topo' },
       { value: 'servicos-rodape', label: 'Serviços - Rodapé' },
   ]
-};
-
+};  

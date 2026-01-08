@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, Menu, X, Phone, Package, Wrench, Disc, Pin, MapPin } from 'lucide-react';
+import { ChevronDown, Menu, X, Phone, Package, Wrench, Disc, Pin, MapPin, Zap, Flame } from 'lucide-react';
 
 export default function Navbar() {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -60,9 +60,24 @@ export default function Navbar() {
 								Sobre
 							</Link>
 
-							<Link href="/empilhadeiras" className={`px-4 py-2 rounded-full transition-all ${isActive('/empilhadeiras')}`}>
-								Empilhadeiras
-							</Link>
+							{/* Dropdown Produtos Desktop */}
+							<div className="relative group px-4 py-2 cursor-pointer">
+								<Link href="/empilhadeiras" className="flex items-center gap-1 text-slate-600 group-hover:text-[#005831] transition-colors">
+									<span>Empilhadeiras</span>
+									<ChevronDown size={16} className="mt-0.5 group-hover:rotate-180 transition-transform duration-300" />
+								</Link>
+
+								<div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-[100]">
+									<div className="bg-white border border-slate-100 shadow-xl rounded-xl overflow-hidden w-56 p-2">
+										<Link href="/empilhadeiras/eletricas" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
+											<Zap size={18} /> <span className="font-medium">Elétricas</span>
+										</Link>
+										<Link href="/empilhadeiras/combustao" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
+											<Flame size={18} /> <span className="font-medium">Combustão</span>
+										</Link>
+									</div>
+								</div>
+							</div>
 
 							{/* Dropdown Produtos Desktop */}
 							<div className="relative group px-4 py-2 cursor-pointer">

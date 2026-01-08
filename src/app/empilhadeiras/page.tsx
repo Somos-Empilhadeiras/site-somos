@@ -1,11 +1,16 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   Search,
-  Truck,
-  Package,
-  ArrowDownCircle,
+  ArrowRight,
+  Zap,
+  Flame,
+  ChevronRight,
+  ShieldCheck,
+  Clock,
+  Award,
   X
 } from 'lucide-react';
 
@@ -14,226 +19,252 @@ import ItemCard from '@/components/admin/items/ItemCard';
 import ModalItem from '@/components/admin/items/ModalItem';
 import { Empilhadeira } from '@/types';
 
-/* ===============================
-   CONFIGURAÇÕES DO CATÁLOGO
-================================ */
-const INITIAL_LIMIT = 8;
-const LOAD_MORE_COUNT = 8;
-const SEARCH_DEBOUNCE = 500;
+/* ======================================================
+   COMPONENTE DA SESSÃO (MANTIDO IGUAL, POIS VOCÊ GOSTOU)
+====================================================== */
+interface ForkliftSectionProps {
+  id: string;
+  title: string;
+  subtitle: string;
+  items: Empilhadeira[];
+  linkHref: string;
+  icon: any;
+  onOpenModal: (item: Empilhadeira) => void;
+  onWhatsApp: (item: Empilhadeira) => void;
+}
 
+const ForkliftSection = ({ id, title, subtitle, items, linkHref, icon: Icon, onOpenModal, onWhatsApp }: ForkliftSectionProps) => {
+  if (items.length === 0) return null;
+
+  return (
+    <section id={id} className="py-16 border-b border-slate-200 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-l-4 border-[#005831] pl-6">
+          <div>
+            <div className="flex items-center gap-2 text-[#005831] font-bold text-xs tracking-widest uppercase mb-1">
+              <Icon size={14} />
+              <span>Categoria</span>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+              {title}
+            </h2>
+            <p className="text-slate-500 mt-1 max-w-2xl text-sm">
+              {subtitle}
+            </p>
+          </div>
+          <Link 
+            href={linkHref}
+            className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-[#005831] transition-colors border-b border-transparent hover:border-[#005831]"
+          >
+            VER TODAS <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {items.slice(0, 4).map(item => (
+            <ItemCard
+              key={item.id}
+              empilhadeira={item}
+              onOpenModal={onOpenModal}
+              onWhatsApp={onWhatsApp}
+            />
+          ))}
+        </div>
+
+        <div className="mt-6 md:hidden text-center">
+          <Link href={linkHref} className="inline-flex items-center gap-2 text-sm font-bold text-[#005831]">
+            VER TODAS <ArrowRight size={16} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ======================================================
+   PÁGINA PRINCIPAL
+====================================================== */
 export default function Catalog() {
   const [items, setItems] = useState<Empilhadeira[]>([]);
   const [selectedItem, setSelectedItem] = useState<Empilhadeira | null>(null);
-
   const [searchTerm, setSearchTerm] = useState('');
-  const [offset, setOffset] = useState(0);
-
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
 
-  /* ===============================
-     FETCH DE DADOS (COM ABORT)
-  ================================ */
-  const fetchEmpilhadeiras = useCallback(
-    async (
-      isLoadMore = false,
-      search = searchTerm,
-      currentOffset = 0,
-      signal?: AbortSignal
-    ) => {
+  const fetchEmpilhadeiras = useCallback(async (search = searchTerm, signal?: AbortSignal) => {
       try {
-        isLoadMore ? setLoadingMore(true) : setLoading(true);
-
-        const limit = isLoadMore ? LOAD_MORE_COUNT : INITIAL_LIMIT;
-
-        const params = new URLSearchParams({
-          limit: String(limit),
-          offset: String(currentOffset),
-          search
-        });
-
+        setLoading(true);
+        const params = new URLSearchParams({ limit: '100', offset: '0', search });
         const response = await fetch(`/api/empilhadeiras?${params}`, { signal });
-        if (!response.ok) throw new Error('Erro ao buscar empilhadeiras');
-
-        const data: Empilhadeira[] = await response.json();
-
-        if (isLoadMore) {
-          setItems(prev => [...prev, ...data]);
-          setOffset(prev => prev + limit);
-          if (data.length < limit) setHasMore(false);
-        } else {
-          setItems(data);
-          setOffset(limit);
-          setHasMore(data.length >= limit);
-        }
-      } catch (err) {
-        if (err instanceof Error && err.name !== 'AbortError') {
-          console.error(err.message);
-        }
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [searchTerm]
+        if (!response.ok) throw new Error('Erro ao buscar dados');
+        const data = await response.json();
+        setItems(data);
+      } catch (err) { console.error(err); } finally { setLoading(false); }
+    }, [searchTerm]
   );
 
-  /* ===============================
-     CARGA INICIAL
-  ================================ */
-  useEffect(() => {
-    fetchEmpilhadeiras();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => { fetchEmpilhadeiras(); }, []); // eslint-disable-line
 
-  /* ===============================
-     BUSCA COM DEBOUNCE
-  ================================ */
   useEffect(() => {
     const controller = new AbortController();
-
-    const timeout = setTimeout(() => {
-      fetchEmpilhadeiras(false, searchTerm, 0, controller.signal);
-    }, SEARCH_DEBOUNCE);
-
-    return () => {
-      controller.abort();
-      clearTimeout(timeout);
-    };
+    const timeout = setTimeout(() => { fetchEmpilhadeiras(searchTerm, controller.signal); }, 500);
+    return () => { controller.abort(); clearTimeout(timeout); };
   }, [searchTerm, fetchEmpilhadeiras]);
 
-  /* ===============================
-     HANDLERS
-  ================================ */
-  const handleLoadMore = () => {
-    fetchEmpilhadeiras(true, searchTerm, offset);
+  // FILTROS
+  const electricItems = items.filter(i => i.engine?.toLowerCase().includes('elétric') || i.engine?.toLowerCase().includes('lítio') || (i.voltage && i.voltage > 0));
+  const combustionItems = items.filter(i => i.engine?.toLowerCase().includes('combustão') || i.engine?.toLowerCase().includes('glp') || i.engine?.toLowerCase().includes('diesel'));
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const offset = el.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top: offset, behavior: 'smooth' });
   };
 
   const handleWhatsAppRedirect = (item: Empilhadeira) => {
     const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE!;
     const link = `${window.location.origin}/catalogo?id=${item.id}`;
-
-    let message = `*SOLICITAÇÃO DE ORÇAMENTO*\n\n`;
-    message += `🚜 *Modelo:* ${item.brand} ${item.model}\n`;
-    if (item.year) message += `📅 *Ano:* ${item.year}\n`;
-    if (item.capacity) message += `⚙️ *Capacidade:* ${item.capacity}kg\n`;
-    message += `\n${link}`;
-
-    window.open(
-      `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
+    const message = `*SOLICITAÇÃO DE ORÇAMENTO*\n\n🚜 *Modelo:* ${item.brand} ${item.model}\n\n${link}`;
+    window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  /* ===============================
-     RENDER
-  ================================ */
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
-
+    <main className="min-h-screen bg-slate-50">
       <DynamicBanner id="catalogo-topo" />
 
-      {/* HERO MAIS LIMPO */}
-      <section className="bg-[#005831] py-14">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white">
-            Catálogo de Empilhadeiras
-          </h1>
-          <p className="text-slate-200 mt-4 max-w-2xl mx-auto">
-            Equipamentos revisados, prontos para operação e com suporte técnico especializado.
-          </p>
-        </div>
-      </section>
-
-      {/* BUSCA */}
-      <section className="container mx-auto px-4 -mt-8 z-10 relative">
-        <div className="bg-white rounded-2xl shadow-lg p-4 max-w-2xl mx-auto">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              aria-label="Buscar empilhadeiras"
-              type="text"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Buscar por marca, modelo ou capacidade"
-              className="w-full pl-12 pr-10 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#005831] outline-none"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X size={18} />
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* CONTEÚDO */}
-      <section className="flex-1 container mx-auto px-4 py-16">
-
-        {loading ? (
-          <div className="flex flex-col items-center py-32">
-            <div className="w-12 h-12 border-4 border-slate-200 border-t-[#005831] rounded-full animate-spin" />
-            <span className="mt-4 text-slate-400">Carregando catálogo…</span>
-          </div>
-        ) : items.length === 0 ? (
-          <div className="bg-white rounded-3xl p-16 text-center border border-dashed">
-            <Package size={48} className="mx-auto text-slate-300" />
-            <h3 className="mt-6 text-xl font-bold">Nenhum resultado encontrado</h3>
-            <p className="text-slate-500 mt-2">
-              Não encontramos equipamentos com esse termo.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Truck className="text-[#005831]" />
-                {searchTerm ? `Resultados para "${searchTerm}"` : 'Catálogo completo'}
-              </h2>
-              <span className="text-slate-500">
-                {items.length} itens
-              </span>
+      {/* ================================================= */}
+      {/* 1. HERO COMPACTO */}
+      {/* ================================================= */}
+      <div className="bg-[#005831] py-8 text-white relative">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
+            
+            {/* Texto Hero */}
+            <div className="text-center md:text-left">
+                <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-tight flex items-center gap-2 justify-center md:justify-start">
+                    Frota Premium <span className="hidden md:inline text-green-300">|</span> <span className="text-green-200 text-lg font-normal normal-case">Venda e Locação</span>
+                </h1>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
-              {items.map(item => (
-                <ItemCard
-                  key={item.id}
-                  empilhadeira={item}
-                  onOpenModal={setSelectedItem}
-                  onWhatsApp={handleWhatsAppRedirect}
+            {/* Busca Compacta */}
+            <div className="w-full md:w-auto min-w-[300px]">
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center px-3 py-1.5 focus-within:bg-white/20 transition-all">
+                    <Search className="text-white/70" size={18} />
+                    <input 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Buscar máquina..."
+                        className="bg-transparent border-none outline-none text-white placeholder-green-100/60 w-full px-3 text-sm"
+                    />
+                    {searchTerm && <button onClick={() => setSearchTerm('')} className="text-white/70 hover:text-white"><X size={14}/></button>}
+                </div>
+            </div>
+        </div>
+      </div>
+
+      {searchTerm ? (
+         <div className="container mx-auto px-4 py-10 min-h-[500px]">
+             <h2 className="text-lg font-bold mb-6 text-slate-700 flex items-center gap-2">
+                <Search size={18}/> Resultados: {items.length} itens
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {items.map(item => (
+                    <ItemCard key={item.id} empilhadeira={item} onOpenModal={setSelectedItem} onWhatsApp={handleWhatsAppRedirect}/>
+                ))}
+            </div>
+         </div>
+      ) : (
+        <>
+            {/* ================================================= */}
+            {/* 2. BARRA DE DESTAQUES (Minimalista) */}
+            {/* ================================================= */}
+            <div className="bg-white border-b border-slate-200">
+                <div className="container mx-auto px-4 py-4">
+                    <div className="grid grid-cols-3 gap-2 md:gap-8 divide-x divide-slate-100">
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 text-center md:text-left">
+                            <Award size={20} className="text-[#005831]" />
+                            <span className="text-xs md:text-sm font-bold text-slate-700 uppercase">Procedência Garantida</span>
+                        </div>
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 text-center md:text-left">
+                            <ShieldCheck size={20} className="text-[#005831]" />
+                            <span className="text-xs md:text-sm font-bold text-slate-700 uppercase">Revisão Completa</span>
+                        </div>
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 text-center md:text-left">
+                            <Clock size={20} className="text-[#005831]" />
+                            <span className="text-xs md:text-sm font-bold text-slate-700 uppercase">Entrega Rápida</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ================================================= */}
+            {/* 3. MENU DE NAVEGAÇÃO COMPACTO */}
+            {/* ================================================= */}
+            <div className="container mx-auto px-4 mt-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <button 
+                        onClick={() => scrollToSection('sessao-eletrica')} 
+                        className="group bg-white border border-slate-200 hover:border-blue-300 hover:shadow-md p-4 rounded-xl transition-all flex items-center gap-4 text-left"
+                    >
+                        <div className="bg-blue-50 text-blue-600 p-3 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                            <Zap size={24} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-800 text-sm uppercase">Linha Elétrica</h3>
+                            <p className="text-xs text-slate-500 mt-0.5">Tecnologia Lítio e Chumbo-Ácido</p>
+                        </div>
+                        <ChevronRight className="ml-auto text-slate-300 group-hover:text-blue-600" size={18}/>
+                    </button>
+
+                    <button 
+                        onClick={() => scrollToSection('sessao-combustao')} 
+                        className="group bg-white border border-slate-200 hover:border-orange-300 hover:shadow-md p-4 rounded-xl transition-all flex items-center gap-4 text-left"
+                    >
+                        <div className="bg-orange-50 text-orange-600 p-3 rounded-lg group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                            <Flame size={24} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-800 text-sm uppercase">Linha Combustão</h3>
+                            <p className="text-xs text-slate-500 mt-0.5">Potência GLP e Diesel</p>
+                        </div>
+                        <ChevronRight className="ml-auto text-slate-300 group-hover:text-orange-600" size={18}/>
+                    </button>
+
+                </div>
+            </div>
+
+            {/* ================================================= */}
+            {/* 4. CATÁLOGO (Mantido igual) */}
+            {/* ================================================= */}
+            <div className="bg-slate-50">
+                <ForkliftSection 
+                    id="sessao-eletrica"
+                    title="ELÉTRICAS"
+                    subtitle="Eficiência e tecnologia para operações internas."
+                    items={electricItems}
+                    linkHref="/empilhadeiras/eletricas"
+                    icon={Zap}
+                    onOpenModal={setSelectedItem}
+                    onWhatsApp={handleWhatsAppRedirect}
                 />
-              ))}
-            </div>
 
-            {hasMore && (
-              <div className="flex justify-center mt-16">
-                <button
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  className="flex items-center gap-3 px-8 py-3 rounded-full border-2 border-slate-200 font-bold hover:border-[#005831] hover:text-[#005831] transition disabled:opacity-60"
-                >
-                  {loadingMore ? 'Carregando…' : 'Ver mais'}
-                  <ArrowDownCircle size={20} />
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </section>
+                <ForkliftSection 
+                    id="sessao-combustao"
+                    title="COMBUSTÃO"
+                    subtitle="Força bruta para operações externas."
+                    items={combustionItems}
+                    linkHref="/empilhadeiras/combustao"
+                    icon={Flame}
+                    onOpenModal={setSelectedItem}
+                    onWhatsApp={handleWhatsAppRedirect}
+                />
+            </div>
+        </>
+      )}
 
       {selectedItem && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <ModalItem
-            empilhadeira={selectedItem}
-            onClose={() => setSelectedItem(null)}
-            onWhatsApp={handleWhatsAppRedirect}
-          />
+          <ModalItem empilhadeira={selectedItem} onClose={() => setSelectedItem(null)} onWhatsApp={handleWhatsAppRedirect} />
         </div>
       )}
 
