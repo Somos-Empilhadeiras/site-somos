@@ -38,9 +38,9 @@ export default function Navbar() {
 	};
 
 	return (
-		<div className='sticky top-0 z-[100] w-full'>
+		<div className='sticky top-0 z-100 w-full'>
 
-			<nav className="bg-white border-b-4 border-[#005831] shadow-lg relative z-[100]">
+			<nav className="bg-white border-b-4 border-[#005831] shadow-lg relative z-100">
 				<div className="container mx-auto px-4">
 					<div className="flex justify-between items-center h-20">
 
@@ -67,7 +67,7 @@ export default function Navbar() {
 									<ChevronDown size={16} className="mt-0.5 group-hover:rotate-180 transition-transform duration-300" />
 								</Link>
 
-								<div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-[100]">
+								<div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-100">
 									<div className="bg-white border border-slate-100 shadow-xl rounded-xl overflow-hidden w-56 p-2">
 										<Link href="/empilhadeiras/eletricas" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
 											<Zap size={18} /> <span className="font-medium">Elétricas</span>
@@ -86,7 +86,7 @@ export default function Navbar() {
 									<ChevronDown size={16} className="mt-0.5 group-hover:rotate-180 transition-transform duration-300" />
 								</Link>
 
-								<div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-[100]">
+								<div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-100">
 									<div className="bg-white border border-slate-100 shadow-xl rounded-xl overflow-hidden w-56 p-2">
 										<Link href="/produtos/pecas" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
 											<Package size={18} /> <span className="font-medium">Peças</span>

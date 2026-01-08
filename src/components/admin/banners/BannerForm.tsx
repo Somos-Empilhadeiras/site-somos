@@ -307,7 +307,7 @@ export default function BannerForm({ formData, setFormData, onSubmit, onCancel, 
 
                                     {/* Tamanho do Texto */}
                                     <div>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block flex items-center gap-1"><Type size={12} /> Tamanho da Fonte</label>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1"><Type size={12} /> Tamanho da Fonte</label>
                                         <div className="flex bg-white border border-slate-200 rounded-lg p-1">
                                             {['small', 'medium', 'large'].map(size => (
                                                 <button

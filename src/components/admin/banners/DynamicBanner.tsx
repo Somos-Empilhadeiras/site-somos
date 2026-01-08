@@ -330,7 +330,7 @@ export default function DynamicBanner({ id, className = '' }: Props) {
                 <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500">Sem Imagem de Fundo</div>
               )}
               {/* Overlay Gradiente Baseado no Alinhamento */}
-              <div className={`absolute inset-0 bg-gradient-to-r ${banner.contentAlign === 'right' ? 'from-transparent via-black/40 to-black/90' : banner.contentAlign === 'center' ? 'from-black/70 via-transparent to-black/70' : 'from-black/90 via-black/40 to-transparent'}`}></div>
+              <div className={`absolute inset-0 bg-linear-to-r ${banner.contentAlign === 'right' ? 'from-transparent via-black/40 to-black/90' : banner.contentAlign === 'center' ? 'from-black/70 via-transparent to-black/70' : 'from-black/90 via-black/40 to-transparent'}`}></div>
             </div>
 
             {/* Conteúdo Texto */}

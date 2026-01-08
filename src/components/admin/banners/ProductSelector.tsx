@@ -211,7 +211,7 @@ export default function ProductSelector({ selectedIds, onChange, maxItems = 4 }:
         
         {/* Empty States (Vagas Vazias) - Estilo Carrossel Vazio */}
         {Array.from({ length: slotsLeft }).map((_, i) => (
-          <div key={i} className="flex items-center justify-center gap-2 h-[80px] border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 text-slate-300 select-none">
+          <div key={i} className="flex items-center justify-center gap-2 h-20 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 text-slate-300 select-none">
             <span className="text-xs font-bold uppercase tracking-wider">Espaço Vazio {selectedProducts.length + i + 1}</span>
           </div>
         ))}
