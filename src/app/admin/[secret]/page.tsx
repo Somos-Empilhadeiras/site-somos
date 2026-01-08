@@ -4,11 +4,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
     LayoutDashboard, ArrowLeft, Package, Megaphone, Users, 
-    ChevronRight, LogOut 
 } from 'lucide-react';
 import Link from 'next/link';
 
-// Seus gerenciadores (Certifique-se que os caminhos estão corretos)
+// Seus gerenciadores
 import ItemManager from '@/components/admin/items/ItemManager';
 import BannerManager from '@/components/admin/banners/BannerManager';
 import JobManager from '@/components/admin/jobs/JobManager';
@@ -20,7 +19,6 @@ export default function AdminPage() {
     const VALID_SECRET = '019abc6c-62d4-765f-83f6-cc3226df3f9a';
 
     const [activeTab, setActiveTab] = useState<'banners' | 'items' | 'jobs'>('banners');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         if (secret !== VALID_SECRET) {
@@ -68,6 +66,11 @@ export default function AdminPage() {
     ];
 
     const activeItem = menuItems.find(i => i.id === activeTab);
+
+    // --- CORREÇÃO: Verificação de segurança ---
+    // Se por acaso não encontrar (o que não deve ocorrer), não renderiza nada.
+    // Isso garante ao TypeScript que activeItem não é undefined nas linhas abaixo.
+    if (!activeItem) return null;
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
@@ -149,11 +152,12 @@ export default function AdminPage() {
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className={`rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden`}>
                         {/* Barra de Título da Seção Ativa */}
-                        <div className={`px-6 py-4 border-b border-slate-100 flex justify-between items-center ${activeItem?.bgSoft}`}>
+                        <div className={`px-6 py-4 border-b border-slate-100 flex justify-between items-center ${activeItem.bgSoft}`}>
                             <div className="flex items-center gap-2">
-                                <activeItem.icon size={18} className={activeItem?.textClass} />
-                                <span className={`font-bold text-sm uppercase tracking-wide ${activeItem?.textClass}`}>
-                                    Gerenciando: {activeItem?.label}
+                                {/* Aqui o TypeScript agora sabe que activeItem existe */}
+                                <activeItem.icon size={18} className={activeItem.textClass} />
+                                <span className={`font-bold text-sm uppercase tracking-wide ${activeItem.textClass}`}>
+                                    Gerenciando: {activeItem.label}
                                 </span>
                             </div>
                         </div>

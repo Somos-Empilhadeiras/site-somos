@@ -11,7 +11,7 @@ import {
   Layers
 } from 'lucide-react';
 
-import ItemCard from '@/components/ItemCard'; 
+import ItemCard from '@/components/admin/items/ItemCard'; 
 import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import { Empilhadeira } from '@/types'; 
 

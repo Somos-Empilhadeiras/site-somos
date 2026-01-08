@@ -11,8 +11,8 @@ import {
 } from 'lucide-react';
 
 import DynamicBanner from '@/components/admin/banners/DynamicBanner';
-import ItemCard from '@/components/ItemCard';
-import ModalItem from '@/components/ModalItem';
+import ItemCard from '@/components/admin/items/ItemCard';
+import ModalItem from '@/components/admin/items/ModalItem';
 import { Empilhadeira } from '@/types';
 import { COMPANY_CONTACTS } from '@/lib/constants';
 

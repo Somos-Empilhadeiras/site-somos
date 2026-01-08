@@ -28,7 +28,7 @@ export default function ModalItem({ empilhadeira: e, onClose, onWhatsApp }: Moda
             {/* Lado Esquerdo (Imagem) */}
             <div className="w-full md:w-1/2 bg-slate-50 flex items-center justify-center relative p-8 border-r border-slate-100">
                 <img
-                    src={e.image_url}
+                    src={e.imageUrl}
                     alt={e.model}
                     className="w-full h-full object-contain max-h-[400px] drop-shadow-xl"
                 />
