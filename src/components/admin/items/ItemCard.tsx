@@ -75,7 +75,29 @@ export default function ItemCard({
     e.stopPropagation();
 
     if (itemType === 'Empilhadeira') {
-      onWhatsApp(empilhadeira);
+      const baseUrl = window.location.origin;
+
+      // Define a categoria correta
+      const categoria = empilhadeira.engine?.includes("Elétrica") ? "eletricas" : "combustao";
+
+      // MUDANÇA AQUI: Usamos '?q=' com o NOME da máquina
+      // encodeURIComponent é vital para lidar com espaços no nome (ex: "CPD 25")
+      const linkDireto = `${baseUrl}/empilhadeiras/${categoria}?q=${encodeURIComponent(empilhadeira.name)}`;
+
+      // Verifica se tem ano, senão não mostra nada
+      const anoInfo = empilhadeira.year ? ` | Ano ${empilhadeira.year}` : '';
+
+      const mensagem = `Olá, vim através do site.
+Tenho interesse técnico nesta empilhadeira:
+
+*${empilhadeira.name}${anoInfo}*
+
+Gostaria de saber mais detalhes e condições de pagamento.
+Link: ${linkDireto}`;
+
+      const linkZap = `https://wa.me/5562991834188?text=${encodeURIComponent(mensagem)}`;
+      window.open(linkZap, '_blank');
+
     } else {
       setShowLocationSelector(true);
     }
@@ -180,7 +202,7 @@ export default function ItemCard({
                     </div>
                   </div>
                 )}
-                
+
                 <div className="flex flex-col border-l border-slate-200 pl-2 border-t mt-1">
                   <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
                     <Calendar size={10} /> Ano

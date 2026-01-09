@@ -8,6 +8,7 @@ import {
   ArrowDownCircle,
   X
 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation'; // <--- IMPORTANTE: Importação necessária
 
 import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import ItemCard from '@/components/admin/items/ItemCard';
@@ -28,6 +29,10 @@ export default function ElectricPage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
 
+  // 1. Hook para ler a URL (NOVO)
+  const searchParams = useSearchParams();
+  const buscaNaUrl = searchParams.get('q'); // Pega o valor de ?q=NomeDaMaquina
+
   /* ===============================
       BUSCAR E FILTRAR (Lógica Local)
   ================================ */
@@ -35,7 +40,6 @@ export default function ElectricPage() {
     try {
       setLoading(true);
       // Buscamos 1000 itens para garantir que pegamos todo o estoque
-      // Depois filtramos localmente o que é "Elétrico"
       const response = await fetch(`/api/empilhadeiras?limit=1000&offset=0`);
       if (!response.ok) throw new Error('Erro ao buscar dados');
       
@@ -56,16 +60,23 @@ export default function ElectricPage() {
     }
   }, []);
 
-  // Carga Inicial
+  // Carga Inicial dos Dados
   useEffect(() => {
     fetchAndFilterItems();
   }, [fetchAndFilterItems]);
+
+  // 2. Effect para aplicar a busca vinda da URL (NOVO)
+  useEffect(() => {
+    if (buscaNaUrl) {
+      setSearchTerm(buscaNaUrl);
+    }
+  }, [buscaNaUrl]);
 
   // Atualiza a lista visível quando a busca ou a contagem muda
   useEffect(() => {
     let filtered = allItems;
 
-    // 1. Aplica busca por texto se houver
+    // Aplica busca por texto se houver
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter(item => 
@@ -75,7 +86,7 @@ export default function ElectricPage() {
       );
     }
 
-    // 2. Paginação local ("Ver mais")
+    // Paginação local ("Ver mais")
     setVisibleItems(filtered.slice(0, visibleCount));
 
   }, [allItems, searchTerm, visibleCount]);
@@ -89,19 +100,31 @@ export default function ElectricPage() {
 
   const handleWhatsAppRedirect = (item: Empilhadeira) => {
     const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE!;
-    const link = `${window.location.origin}/catalogo?id=${item.id}`;
+    // Ajustado para mandar o link de busca na categoria elétrica
+    const baseUrl = window.location.origin;
+    const link = `${baseUrl}/empilhadeiras/eletricas?q=${encodeURIComponent(item.name)}`;
+
     let message = `*SOLICITAÇÃO DE ORÇAMENTO (ELÉTRICA)*\n\n`;
     message += `⚡ *Modelo:* ${item.brand} ${item.model}\n`;
     if (item.year) message += `📅 *Ano:* ${item.year}\n`;
-    message += `\n${link}`;
+    message += `\n🔗 Link: ${link}`;
+    
     window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, '_blank');
   };
 
   /* ===============================
       RENDER
   ================================ */
-  // Verifica se tem mais itens para mostrar além dos atuais
-  const hasMore = allItems.length > 0 && visibleItems.length < allItems.length && (!searchTerm || visibleItems.length < allItems.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase())).length);
+  // Verifica se tem mais itens para mostrar
+  // Lógica ajustada para considerar o filtro ativo na conta do "Ver Mais"
+  const currentFilteredCount = allItems.filter(item => 
+    !searchTerm || 
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.model?.toLowerCase().includes(searchTerm.toLowerCase())
+  ).length;
+
+  const hasMore = visibleItems.length < currentFilteredCount;
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
@@ -155,6 +178,11 @@ export default function ElectricPage() {
             <Package size={48} className="mx-auto text-slate-300" />
             <h3 className="mt-6 text-xl font-bold">Nenhum equipamento encontrado</h3>
             <p className="text-slate-500 mt-2">Não encontramos elétricas com este termo.</p>
+            {searchTerm && (
+               <button onClick={() => setSearchTerm('')} className="mt-4 text-blue-600 font-bold hover:underline">
+                 Limpar busca
+               </button>
+            )}
           </div>
         ) : (
           <>
@@ -165,7 +193,7 @@ export default function ElectricPage() {
               </h2>
               <span className="text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full text-sm">
                 {searchTerm 
-                   ? visibleItems.length 
+                   ? `${visibleItems.length} encontrado(s)`
                    : `${allItems.length} máquinas`
                 }
               </span>

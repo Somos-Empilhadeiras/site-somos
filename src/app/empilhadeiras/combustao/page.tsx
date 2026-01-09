@@ -13,6 +13,7 @@ import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import ItemCard from '@/components/admin/items/ItemCard';
 import ModalItem from '@/components/admin/items/ModalItem';
 import { Empilhadeira } from '@/types';
+import { useSearchParams } from 'next/navigation';
 
 const PAGE_SIZE = 8;
 
@@ -25,19 +26,24 @@ export default function CombustionPage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
 
+  // 1. Hook para ler a URL
+  const searchParams = useSearchParams();
+  const buscaNaUrl = searchParams.get('q'); // Pega o valor de ?q=...
+
+  // 2. Lógica de Busca e Filtro (Combustão)
   const fetchAndFilterItems = useCallback(async () => {
     try {
       setLoading(true);
       // Busca geral
       const response = await fetch(`/api/empilhadeiras?limit=1000&offset=0`);
       if (!response.ok) throw new Error('Erro ao buscar dados');
-      
+
       const data: Empilhadeira[] = await response.json();
 
       // FILTRO RIGOROSO: Apenas Combustão/GLP/Diesel
-      const combustionOnly = data.filter(i => 
-        i.engine?.toLowerCase().includes('combustão') || 
-        i.engine?.toLowerCase().includes('glp') || 
+      const combustionOnly = data.filter(i =>
+        i.engine?.toLowerCase().includes('combustão') ||
+        i.engine?.toLowerCase().includes('glp') ||
         i.engine?.toLowerCase().includes('diesel')
       );
 
@@ -49,15 +55,24 @@ export default function CombustionPage() {
     }
   }, []);
 
+  // Carga Inicial
   useEffect(() => {
     fetchAndFilterItems();
   }, [fetchAndFilterItems]);
 
+  // 3. Efeito para aplicar a busca vinda da URL
+  useEffect(() => {
+    if (buscaNaUrl) {
+      setSearchTerm(buscaNaUrl);
+    }
+  }, [buscaNaUrl]);
+
+  // Atualiza a lista visível
   useEffect(() => {
     let filtered = allItems;
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter(item =>
         item.name.toLowerCase().includes(lowerSearch) ||
         item.brand?.toLowerCase().includes(lowerSearch) ||
         item.model?.toLowerCase().includes(lowerSearch)
@@ -70,22 +85,31 @@ export default function CombustionPage() {
     setVisibleCount(prev => prev + PAGE_SIZE);
   };
 
+  // 4. WhatsApp com Link de Busca
   const handleWhatsAppRedirect = (item: Empilhadeira) => {
     const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE!;
-    const link = `${window.location.origin}/catalogo?id=${item.id}`;
+    const baseUrl = window.location.origin;
+    
+    // Link aponta para esta página com a busca preenchida
+    const link = `${baseUrl}/empilhadeiras/combustao?q=${encodeURIComponent(item.name)}`;
+    
     let message = `*SOLICITAÇÃO DE ORÇAMENTO (COMBUSTÃO)*\n\n`;
     message += `🔥 *Modelo:* ${item.brand} ${item.model}\n`;
     if (item.year) message += `📅 *Ano:* ${item.year}\n`;
-    message += `\n${link}`;
+    message += `\n🔗 Link: ${link}`;
+    
     window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, '_blank');
   };
 
   // Lógica para saber se tem mais itens
-  // Se tiver busca, compara com o total filtrado pela busca. Se não, com o total geral.
-  const filteredCount = searchTerm 
-      ? allItems.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase())).length
-      : allItems.length;
-  const hasMore = visibleItems.length < filteredCount;
+  const currentFilteredCount = allItems.filter(item => 
+    !searchTerm || 
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.model?.toLowerCase().includes(searchTerm.toLowerCase())
+  ).length;
+
+  const hasMore = visibleItems.length < currentFilteredCount;
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
@@ -139,6 +163,11 @@ export default function CombustionPage() {
             <Package size={48} className="mx-auto text-slate-300" />
             <h3 className="mt-6 text-xl font-bold">Nenhum equipamento encontrado</h3>
             <p className="text-slate-500 mt-2">Não encontramos máquinas com este termo.</p>
+            {searchTerm && (
+               <button onClick={() => setSearchTerm('')} className="mt-4 text-orange-600 font-bold hover:underline">
+                 Limpar busca
+               </button>
+            )}
           </div>
         ) : (
           <>
@@ -148,9 +177,9 @@ export default function CombustionPage() {
                 {searchTerm ? `Resultados: "${searchTerm}"` : 'Linha Combustão Completa'}
               </h2>
               <span className="text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full text-sm">
-                {searchTerm 
-                   ? visibleItems.length 
-                   : `${allItems.length} máquinas`
+                {searchTerm
+                  ? `${visibleItems.length} encontrado(s)`
+                  : `${allItems.length} máquinas`
                 }
               </span>
             </div>

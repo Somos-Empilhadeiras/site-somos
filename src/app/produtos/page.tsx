@@ -1,263 +1,269 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { 
-  ArrowRight, 
-  Package, 
-  Wrench, 
-  Disc, 
-  ChevronRight,
-  Layers
+import { useState } from 'react';
+import {
+  Package,
+  Wrench,
+  Disc,
+  X,
+  MapPin,
+  MessageCircle,
+  ArrowRight,
+  CheckCircle2,
+  Tag // Ícone para identificar a categoria
 } from 'lucide-react';
-
-import ItemCard from '@/components/admin/items/ItemCard'; 
 import DynamicBanner from '@/components/admin/banners/DynamicBanner';
-import { Empilhadeira } from '@/types'; 
+import { REGIONAL_CONTACTS } from '@/lib/constants';
 
 // ======================================================
-// 1. COMPONENTE DE LINHA DE SOLUÇÃO (CATÁLOGO)
-//    Mantido a lógica de fetch individual por tipo
+// COMPONENTE MODAL DE CONTATO (ATUALIZADO)
 // ======================================================
-interface CategoryRowProps {
-  id: string;
-  title: string;
-  subtitle: string;
-  type: 'PART' | 'SERVICE' | 'TIRE';
-  linkHref: string;
-  icon: any;
+interface ContactModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  category: string;
 }
 
-const CategoryRow = ({ id, title, subtitle, type, linkHref, icon: Icon }: CategoryRowProps) => {
-  const [items, setItems] = useState<Empilhadeira[]>([]);
-  const [loading, setLoading] = useState(true);
+const ContactModal = ({ isOpen, onClose, category }: ContactModalProps) => {
+  if (!isOpen) return null;
 
-  useEffect(() => {
-    async function fetchItems() {
-      try {
-        const res = await fetch(`/api/products?type=${type}&limit=4`);
-        const data = await res.json();
-        if (Array.isArray(data)) setItems(data);
-      } catch (error) {
-        console.error(`Erro ao buscar ${type}`, error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchItems();
-  }, [type]);
-
-  if (!loading && items.length === 0) return null;
+  const redirectToRegion = (phone: string, regionName: string) => {
+    // Monta a mensagem personalizada
+    const message = `Olá! Vim pelo site. Estou interessado em *${category}* para a região de *${regionName}*. Poderia me ajudar?`;
+    
+    // Cria o link codificado
+    const link = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    
+    window.open(link, '_blank');
+    onClose();
+  };
 
   return (
-    <section id={id} className="py-16 border-b border-slate-200 bg-white">
-      <div className="container mx-auto px-4">
-
-        {/* HEADER DA LINHA (Compacto) */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-l-4 border-[#005831] pl-6">
-          <div>
-            <div className="flex items-center gap-2 text-[#005831] font-bold text-xs tracking-widest uppercase mb-1">
-              <Icon size={14} />
-              <span>Linha de Solução</span>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
-              {title}
-            </h2>
-            <p className="text-slate-500 mt-1 max-w-2xl text-sm">
-              {subtitle}
-            </p>
+    <div
+      className="fixed inset-0 z-9999 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Cabeçalho */}
+        <div className="bg-[#005831] p-5">
+          <div className="flex justify-between items-start mb-3">
+            <h3 className="text-white font-bold flex items-center gap-2 text-lg">
+              <MapPin size={20} />
+              Selecione sua Região
+            </h3>
+            <button
+              onClick={onClose}
+              className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
 
-          <Link 
-            href={linkHref}
-            className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-[#005831] transition-colors border-b border-transparent hover:border-[#005831]"
-          >
-            VER CATÁLOGO <ArrowRight size={16} />
-          </Link>
+          {/* Badge de Identificação do Interesse */}
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-xs font-medium border border-white/10">
+            <Tag size={14} />
+            <span>Interesse: <strong>{category}</strong></span>
+          </div>
         </div>
 
-        {/* GRID */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="h-[360px] bg-slate-100 animate-pulse rounded-xl" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {items.map(item => (
-              <ItemCard 
-                key={item.id}
-                empilhadeira={item}
-                onOpenModal={() => {}}
-                onWhatsApp={(i) =>
-                  window.open(
-                    `https://wa.me/5562991834188?text=Olá, tenho interesse em: ${i.name}`,
-                    '_blank'
-                  )
-                }
-              />
-            ))}
-          </div>
-        )}
+        <div className="p-6">
+          <p className="text-sm text-slate-600 mb-5 text-center leading-relaxed">
+            Para agilizar seu atendimento sobre <strong>{category}</strong>, escolha a unidade mais próxima:
+          </p>
 
-        {/* LINK MOBILE */}
-        <div className="mt-6 md:hidden text-center">
-          <Link href={linkHref} className="inline-flex items-center gap-2 text-sm font-bold text-[#005831]">
-            VER CATÁLOGO <ArrowRight size={16} />
-          </Link>
+          <div className="grid gap-3">
+            <button
+              onClick={() => redirectToRegion(REGIONAL_CONTACTS.GO_TO, 'Goiânia / Tocantins')}
+              className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-[#005831] hover:bg-green-50 transition-all group"
+            >
+              <span className="font-bold text-slate-700 group-hover:text-[#005831]">Goiânia / Tocantins</span>
+              <MessageCircle size={20} className="text-slate-300 group-hover:text-[#005831]" />
+            </button>
+
+            <button
+              onClick={() => redirectToRegion(REGIONAL_CONTACTS.DF, 'Distrito Federal')}
+              className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-[#005831] hover:bg-green-50 transition-all group"
+            >
+              <span className="font-bold text-slate-700 group-hover:text-[#005831]">Distrito Federal</span>
+              <MessageCircle size={20} className="text-slate-300 group-hover:text-[#005831]" />
+            </button>
+
+            <button
+              onClick={() => redirectToRegion(REGIONAL_CONTACTS.BA, 'Bahia')}
+              className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-[#005831] hover:bg-green-50 transition-all group"
+            >
+              <span className="font-bold text-slate-700 group-hover:text-[#005831]">Bahia</span>
+              <MessageCircle size={20} className="text-slate-300 group-hover:text-[#005831]" />
+            </button>
+
+            <button
+              onClick={() => redirectToRegion(REGIONAL_CONTACTS.PE, 'Pernambuco')}
+              className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-[#005831] hover:bg-green-50 transition-all group"
+            >
+              <span className="font-bold text-slate-700 group-hover:text-[#005831]">Pernambuco</span>
+              <MessageCircle size={20} className="text-slate-300 group-hover:text-[#005831]" />
+            </button>
+          </div>
         </div>
-
       </div>
-    </section>
+    </div>
   );
 };
 
 // ======================================================
-// 2. PÁGINA PRINCIPAL
+// PÁGINA PRINCIPAL
 // ======================================================
 export default function ProductsPage() {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const offset = el.getBoundingClientRect().top + window.scrollY - 80;
-    window.scrollTo({ top: offset, behavior: 'smooth' });
-  };
+  const openModal = (category: string) => setSelectedCategory(category);
+  const closeModal = () => setSelectedCategory(null);
+
+  const SOLUTIONS = [
+    {
+      id: 'pecas',
+      title: 'Peças de Reposição',
+      description: 'Peças de alta durabilidade para manter sua empilhadeira operando com segurança.',
+      icon: Package,
+      details: ['Filtros e Óleos', 'Componentes de Motor', 'Sistema Hidráulico', 'Elétrica e Sensores'],
+      color: 'bg-blue-50 border-blue-100 text-blue-700',
+      btnColor: 'bg-blue-600 hover:bg-blue-700'
+    },
+    {
+      id: 'servicos',
+      title: 'Serviços Especializados',
+      description: 'Manutenção técnica realizada por profissionais experientes e qualificados.',
+      icon: Wrench,
+      details: ['Manutenção Preventiva', 'Reforma de Máquinas', 'Diagnóstico Técnico', 'Suporte Especializado'],
+      color: 'bg-orange-50 border-orange-100 text-orange-700',
+      btnColor: 'bg-orange-600 hover:bg-orange-700'
+    },
+    {
+      id: 'pneus',
+      title: 'Pneus Industriais',
+      description: 'Opções robustas para garantir estabilidade e tração em qualquer operação.',
+      icon: Disc,
+      details: ['Pneus Pneumáticos', 'Pneus Superelásticos', 'Pneus Maciços', 'Serviço de Prensagem'],
+      color: 'bg-slate-50 border-slate-200 text-slate-700',
+      btnColor: 'bg-slate-800 hover:bg-slate-900'
+    }
+  ];
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 font-sans">
 
       <DynamicBanner id="produtos-hero" />
 
-      {/* ================================================= */}
-      {/* 1. HERO COMPACTO (Estilo Máquinas, mas cor Vermelha) */}
-      {/* ================================================= */}
-      <div className="bg-[#bb0303] py-8 text-white relative border-b-4 border-[#005831]">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
-            
-            {/* Texto Hero */}
-            <div className="text-center md:text-left">
-                <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-tight flex items-center gap-2 justify-center md:justify-start">
-                    Soluções Industriais <span className="hidden md:inline text-red-300">|</span> <span className="text-red-100 text-lg font-normal normal-case">Peças, Serviços e Pneus</span>
-                </h1>
-            </div>
-
-            {/* Texto de Apoio (Ocupa o lugar da busca que tem na outra página) */}
-            <div className="hidden md:block text-right">
-                <p className="text-sm text-red-100 font-medium max-w-md">
-                   Garanta a disponibilidade e o desempenho contínuo da sua frota com nossa linha especializada.
-                </p>
-            </div>
+      {/* Hero Section */}
+      <div className="bg-[#005831] py-12 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h1 className="text-3xl md:text-5xl font-extrabold uppercase tracking-tight mb-4">
+            Soluções Completas
+          </h1>
+          <p className="text-green-100 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+            Peças, Pneus e Serviços Técnicos para garantir o desempenho da sua operação.
+          </p>
         </div>
       </div>
 
-      {/* ================================================= */}
-      {/* 2. BARRA DE DESTAQUES (Minimalista) */}
-      {/* ================================================= */}
-      <div className="bg-white border-b border-slate-200">
-          <div className="container mx-auto px-4 py-4">
-              <div className="grid grid-cols-3 gap-2 md:gap-8 divide-x divide-slate-100">
-                  <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 text-center md:text-left">
-                      <Layers size={20} className="text-[#005831]" />
-                      <span className="text-xs md:text-sm font-bold text-slate-700 uppercase">Portfólio Completo</span>
+      {/* ÁREA DOS CARDS */}
+      <section className="py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {SOLUTIONS.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => openModal(item.title)}
+                className="group bg-white rounded-2xl shadow-sm hover:shadow-2xl border border-slate-200 hover:border-[#005831]/30 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col relative"
+              >
+                <div className={`h-2 w-full ${item.btnColor}`}></div>
+                <div className="p-8 flex-1 flex flex-col">
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110 duration-300 ${item.color}`}>
+                    <item.icon size={32} />
                   </div>
-                  <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 text-center md:text-left">
-                      <Wrench size={20} className="text-[#005831]" />
-                      <span className="text-xs md:text-sm font-bold text-slate-700 uppercase">Especialização Técnica</span>
+                  <h2 className="text-2xl font-bold text-slate-800 mb-3 group-hover:text-[#005831] transition-colors">
+                    {item.title}
+                  </h2>
+                  <p className="text-slate-600 mb-6 leading-relaxed">
+                    {item.description}
+                  </p>
+                  <ul className="space-y-2 mb-8 bg-slate-50 p-4 rounded-lg">
+                    {item.details.map((detail, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                        <CheckCircle2 size={14} className="text-[#005831]" />
+                        {detail}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto">
+                    <button className={`w-full py-4 rounded-xl text-white font-bold flex items-center justify-center gap-2 transition-all shadow-md group-hover:shadow-lg ${item.btnColor}`}>
+                      Solicitar Cotação
+                      <ArrowRight size={20} />
+                    </button>
                   </div>
-                  <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 text-center md:text-left">
-                      <Package size={20} className="text-[#005831]" />
-                      <span className="text-xs md:text-sm font-bold text-slate-700 uppercase">Agilidade Operacional</span>
-                  </div>
+                </div>
               </div>
+            ))}
           </div>
-      </div>
-
-      {/* ================================================= */}
-      {/* 3. MENU DE NAVEGAÇÃO COMPACTO */}
-      {/* ================================================= */}
-      <div className="container mx-auto px-4 mt-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-          <button 
-             onClick={() => scrollToSection('section-pecas')} 
-             className="group bg-white border border-slate-200 hover:border-[#005831] hover:shadow-md p-4 rounded-xl transition-all flex items-center gap-4 text-left"
-          >
-             <div className="bg-slate-100 text-slate-600 p-3 rounded-lg group-hover:bg-[#005831] group-hover:text-white transition-colors">
-                <Package size={24} />
-             </div>
-             <div>
-                <h3 className="font-bold text-slate-800 text-sm uppercase">Peças</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Reposição Mecânica</p>
-             </div>
-             <ChevronRight className="ml-auto text-slate-300 group-hover:text-[#005831]" size={18}/>
-          </button>
-
-          <button 
-             onClick={() => scrollToSection('section-servicos')} 
-             className="group bg-white border border-slate-200 hover:border-[#005831] hover:shadow-md p-4 rounded-xl transition-all flex items-center gap-4 text-left"
-          >
-             <div className="bg-slate-100 text-slate-600 p-3 rounded-lg group-hover:bg-[#005831] group-hover:text-white transition-colors">
-                <Wrench size={24} />
-             </div>
-             <div>
-                <h3 className="font-bold text-slate-800 text-sm uppercase">Serviços</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Manutenção Técnica</p>
-             </div>
-             <ChevronRight className="ml-auto text-slate-300 group-hover:text-[#005831]" size={18}/>
-          </button>
-
-          <button 
-             onClick={() => scrollToSection('section-pneus')} 
-             className="group bg-white border border-slate-200 hover:border-[#005831] hover:shadow-md p-4 rounded-xl transition-all flex items-center gap-4 text-left"
-          >
-             <div className="bg-slate-100 text-slate-600 p-3 rounded-lg group-hover:bg-[#005831] group-hover:text-white transition-colors">
-                <Disc size={24} />
-             </div>
-             <div>
-                <h3 className="font-bold text-slate-800 text-sm uppercase">Pneus</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Pneumáticos e Sólidos</p>
-             </div>
-             <ChevronRight className="ml-auto text-slate-300 group-hover:text-[#005831]" size={18}/>
-          </button>
-
         </div>
-      </div>
+      </section>
 
-      {/* ================================================= */}
-      {/* 4. CATÁLOGO */}
-      {/* ================================================= */}
-      <div className="bg-slate-50">
-        <CategoryRow 
-          id="section-pecas"
-          title="PEÇAS DE REPOSIÇÃO"
-          subtitle="Componentes homologados para máxima confiabilidade operacional."
-          type="PART"
-          linkHref="/produtos/pecas"
-          icon={Package}
-        />
+      {/* FAIXA DE CONFIANÇA */}
+      <section className="bg-white border-t border-slate-200 py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h3 className="text-slate-400 font-bold text-sm uppercase tracking-widest mb-10">
+            Excelência Somos Empilhadeiras
+          </h3>
 
-        <CategoryRow 
-          id="section-servicos"
-          title="SERVIÇOS TÉCNICOS"
-          subtitle="Manutenção especializada e suporte técnico em campo."
-          type="SERVICE"
-          linkHref="/produtos/servicos"
-          icon={Wrench}
-        />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
+            {/* Item 1 */}
+            <div className="p-4 flex flex-col items-center">
+              <span className="inline-flex items-center justify-center w-12 h-12 bg-green-50 text-[#005831] rounded-full mb-4">
+                <Wrench size={24} />
+              </span>
+              <span className="block text-xl font-black text-slate-800 mb-2 uppercase">Especialistas</span>
+              <span className="text-sm text-slate-500 font-medium leading-relaxed max-w-[200px]">
+                Equipe técnica treinada e qualificada.
+              </span>
+            </div>
 
-        <CategoryRow 
-          id="section-pneus"
-          title="PNEUS INDUSTRIAIS"
-          subtitle="Durabilidade e desempenho para ambientes internos e externos."
-          type="TIRE"
-          linkHref="/produtos/pneus"
-          icon={Disc}
-        />
-      </div>
+            {/* Item 2 */}
+            <div className="p-4 flex flex-col items-center">
+              <span className="inline-flex items-center justify-center w-12 h-12 bg-green-50 text-[#005831] rounded-full mb-4">
+                <CheckCircle2 size={24} />
+              </span>
+              <span className="block text-xl font-black text-slate-800 mb-2 uppercase">Agilidade</span>
+              <span className="text-sm text-slate-500 font-medium leading-relaxed max-w-[200px]">
+                Rapidez no diagnóstico e na solução do problema.
+              </span>
+            </div>
+
+            {/* Item 3 */}
+            <div className="p-4 flex flex-col items-center">
+              <span className="inline-flex items-center justify-center w-12 h-12 bg-green-50 text-[#005831] rounded-full mb-4">
+                <MessageCircle size={24} />
+              </span>
+              <span className="block text-xl font-black text-slate-800 mb-2 uppercase">Confiança</span>
+              <span className="text-sm text-slate-500 font-medium leading-relaxed max-w-[200px]">
+                Foco total na satisfação e sucesso do cliente.
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <DynamicBanner id="produtos-rodape" />
+
+      <ContactModal
+        isOpen={!!selectedCategory}
+        onClose={closeModal}
+        category={selectedCategory || ''}
+      />
+
     </main>
   );
 }
