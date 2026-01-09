@@ -132,7 +132,7 @@ export default function Home() {
               <p className="text-slate-600 mb-6 leading-relaxed">
                 Renove sua frota com equipamentos zero km HELI. Garantia de fábrica e consultoria para escolher o modelo ideal.
               </p>
-              <Link href="/catalogo" className="text-[#005831] font-bold text-sm uppercase tracking-wide flex items-center gap-1 group-hover:gap-2 transition-all">
+              <Link href="https://wa.me/5562991834188" className="text-[#005831] font-bold text-sm uppercase tracking-wide flex items-center gap-1 group-hover:gap-2 transition-all">
                 Ver Opções <ArrowRight size={16} />
               </Link>
             </div>
@@ -186,7 +186,7 @@ export default function Home() {
                 Seja para comprar ou alugar, temos a solução financeira e operacional que se encaixa no seu fluxo de caixa.
               </p>
               <ul className="grid sm:grid-cols-2 gap-4 mb-8">
-                {['Manutenção Preventiva Inclusa', 'Frota Sempre Renovada', 'Dedutível do IR (Locação)', 'Suporte Técnico Dedicado'].map((item, i) => (
+                {['Suporte em Pos Vendas', 'Frota Sempre Renovada', 'Dedutível do IR (Locação)', 'Suporte Técnico Dedicado'].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 font-medium">
                     <CheckCircle2 className="text-yellow-400" size={20} /> {item}
                   </li>

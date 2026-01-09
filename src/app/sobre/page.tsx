@@ -43,7 +43,7 @@ export default function About() {
               <p>
                 Trabalhamos ao lado de empresas que exigem eficiência, segurança e
                 suporte técnico confiável, atendendo principalmente as regiões de
-                <strong> GO, DF e TO</strong>.
+                <strong> GO, DF, TO, BA e RE</strong>.
               </p>
 
               <p>

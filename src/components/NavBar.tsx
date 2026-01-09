@@ -102,22 +102,7 @@ export default function Navbar() {
 							<div className="relative group px-4 py-2 cursor-pointer">
 								<Link href="/produtos" className="flex items-center gap-1 text-slate-600 group-hover:text-[#005831] transition-colors">
 									<span>Produtos</span>
-									<ChevronDown size={16} className="mt-0.5 group-hover:rotate-180 transition-transform duration-300" />
 								</Link>
-
-								<div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-100">
-									<div className="bg-white border border-slate-100 shadow-xl rounded-xl overflow-hidden w-56 p-2">
-										<Link href="/produtos/pecas" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
-											<Package size={18} /> <span className="font-medium">Peças</span>
-										</Link>
-										<Link href="/produtos/servicos" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
-											<Wrench size={18} /> <span className="font-medium">Serviços</span>
-										</Link>
-										<Link href="/produtos/pneus" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
-											<Disc size={18} /> <span className="font-medium">Pneus</span>
-										</Link>
-									</div>
-								</div>
 							</div>
 
 							<Link href="https://br.linkedin.com/company/somosempilhadeiras" className={`px-4 py-2 rounded-full transition-all ${isActive('https://br.linkedin.com/company/somosempilhadeiras')}`}>
