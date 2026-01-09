@@ -1,20 +1,13 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
-import { MapPin, Calendar, Info, MousePointerClick, Building2, Timer, Pin, Mail, MessageCircle, Phone, User, Clock } from 'lucide-react';
+import { MapPin,  Mail, MessageCircle, Phone, User, Clock } from 'lucide-react';
+import {GEO_URL, STATE_DETAILS } from '@/lib/constants';
 
-const GEO_URL = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson";
 
 // Importante: 'GO' é o primeiro para iniciar nele
 const ACTIVE_STATES = ['GO', 'DF', 'TO', 'BA', 'PE'];
 
-const STATE_DETAILS: Record<string, { date: string; address: string, representant: string, operation: string, mail: string, phone: string, city: string, text: string, wpp: string}> = {
-  'GO': { date: 'Desde 2023', address: "Av. Caiapó, 1190 - Santa Genoveva, Goiânia - GO, 74672-400", representant: "Khryss Mylla", operation: "07:00 às 17:00", mail: "comercial@somosempilhadeiras.com.br", phone: "62 9 9183-4188", city: "Goiânia", wpp: '5562991834188', text: 'Nossa casa, onde tudo começou. Sede administrativa e operacional.' },
-  'DF': { date: 'Desde 2024', address: "SCIA - Lote, Brasília - DF", representant: "Maike Jhonny", operation: "07:00 às 17:00", mail: "maike@somosempilhadeiras.com.br", phone: "62 9 9183-4188", wpp:"5562991834188", city: "Brasília", text: 'Atendendo o coração do Brasil com agilidade e precisão logística.' },
-  'TO': { date: 'Desde 2024', address: "", representant: "", operation: "", mail: "", phone: "", wpp: "", city: "Palmas", text: 'Expandindo horizontes no norte, apoiando o agronegócio.' },
-  'BA': { date: 'Desde 2024', address: "Av. Luís Eduardo Magalhães, QD 02 - LT 26  - Bairro Vereda Tropical, Luís Eduardo Magalhães - BA, 47862-090", representant: "Cristiane Rodrigues", operation: "08:00 às 18:00", mail: "cristiane@somosempilhadeiras.com.br", phone: "62 9 9183-4188", wpp: "5562991834188", city: "Luís Eduardo Magalhães", text: 'Energia e força para o nordeste, com frota especializada.' },
-  'PE': { date: 'Desde 2025', address: "Recife", representant: "Alan Santana", operation: "07:00 às 17:00", mail: "alan@somosempilhadeiras.com.br", phone: "81 9 9258-6532", wpp: '5581992586532', city: "Recife", text: "" },
-};
 
 interface GeoProps {
   rsmKey: string;

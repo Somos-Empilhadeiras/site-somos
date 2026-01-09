@@ -6,33 +6,9 @@ import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps
 import { 
   MapPin, Mail, Phone, Clock, User, Building2, MessageCircle, ArrowRight, Star
 } from 'lucide-react';
+import { CITY_COORDINATES, GEO_URL, MAP_CONFIG, STATE_DETAILS } from '@/lib/constants';
 
 // --- DADOS (Mesmos dados, apenas reestruturação visual) ---
-const GEO_URL = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson";
-
-const CITY_COORDINATES: Record<string, [number, number]> = {
-  'GO': [-49.255, -16.679],
-  'DF': [-47.887, -15.793],
-  'TO': [-48.327, -10.183],
-  'BA': [-45.796, -12.095],
-  'PE': [-34.877, -8.047],
-};
-
-const MAP_CONFIG: Record<string, { scale: number; center: [number, number] }> = {
-  'GO': { scale: 3500, center: [-49.5, -16.5] },
-  'DF': { scale: 15000, center: [-47.8, -15.75] },
-  'TO': { scale: 3000, center: [-48.0, -10.5] },
-  'BA': { scale: 1800, center: [-41.5, -12.5] },
-  'PE': { scale: 5000, center: [-37.0, -8.3] },
-};
-
-const STATE_DETAILS: Record<string, any> = {
-  'GO': { date: '2023', address: "Av. Caiapó, 1190 - Santa Genoveva, Goiânia - GO, 74672-400", representant: "Khryss Mylla", role: "Gerente Comercial", operation: "Seg a Sex, 07h às 17h", mail: "comercial@somosempilhadeiras.com.br", phone: "(62) 9 9183-4188", city: "Goiânia", wpp: '5562991834188', text: 'Nossa casa, onde tudo começou. Sede administrativa e operacional.' },
-  'DF': { date: '2024', address: "SCIA - Lote, Brasília - DF", representant: "Maike Jhonny", role: "Consultor Técnico", operation: "Seg a Sex, 07h às 17h", mail: "maike@somosempilhadeiras.com.br", phone: "(62) 9 9183-4188", wpp:"5562991834188", city: "Brasília", text: 'Atendendo o coração do Brasil com agilidade e precisão logística.' },
-  'TO': { date: '2024', address: "Logística Integrada", representant: "Equipe Comercial", role: "Atendimento", operation: "Seg a Sex, 08h às 18h", mail: "comercial@somosempilhadeiras.com.br", phone: "(62) 9 9183-4188", wpp: "5562991834188", city: "Palmas", text: 'Expandindo horizontes no norte, apoiando o agronegócio.' },
-  'BA': { date: '2024', address: "Av. Luís Eduardo Magalhães, QD 02 - LT 26, LEM - BA", representant: "Cristiane Rodrigues", role: "Representante", operation: "Seg a Sex, 08h às 18h", mail: "cristiane@somosempilhadeiras.com.br", phone: "(62) 9 9183-4188", wpp: "5562991834188", city: "Luís Eduardo Magalhães", text: 'Energia e força para o nordeste, com frota especializada.' },
-  'PE': { date: '2025', address: "Base Operacional Recife", representant: "Alan Santana", role: "Gerente Regional", operation: "Seg a Sex, 07h às 17h", mail: "alan@somosempilhadeiras.com.br", phone: "(81) 9 9258-6532", wpp: '5581992586532', city: "Recife", text: "Nova base estratégica para o litoral e indústrias da região." },
-};
 
 interface UnitDetailsProps {
   stateId: string;
@@ -56,7 +32,7 @@ export default function UnitDetails({ stateId }: UnitDetailsProps) {
     <div className="min-h-screen bg-slate-50">
       
       {/* 1. HERO BANNER: Visual Acolhedor e Moderno */}
-      <div className="relative bg-gradient-to-r from-[#005831] to-[#057a44] text-white pb-32 pt-20 overflow-hidden">
+      <div className="relative bg-linear-to-r from-[#005831] to-[#057a44] text-white pb-32 pt-20 overflow-hidden">
         {/* Elemento decorativo de fundo */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-black opacity-10 rounded-full translate-y-1/3 -translate-x-1/3 blur-3xl"></div>

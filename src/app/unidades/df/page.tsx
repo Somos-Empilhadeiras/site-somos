@@ -31,7 +31,7 @@ const STATE_DETAILS: Record<string, any> = {
   'DF': { date: '2024', address: "SCIA - Lote, Brasília - DF", representant: "Maike Jhonny", role: "Consultor Técnico", operation: "Seg a Sex, 07h às 17h", mail: "maike@somosempilhadeiras.com.br", phone: "(62) 9 9183-4188", wpp:"5562991834188", city: "Brasília", text: 'Atendendo o coração do Brasil com agilidade e precisão logística.' },
   'TO': { date: '2024', address: "Logística Integrada", representant: "Equipe Comercial", role: "Atendimento", operation: "Seg a Sex, 08h às 18h", mail: "comercial@somosempilhadeiras.com.br", phone: "(62) 9 9183-4188", wpp: "5562991834188", city: "Palmas", text: 'Expandindo horizontes no norte, apoiando o agronegócio.' },
   'BA': { date: '2024', address: "Av. Luís Eduardo Magalhães, QD 02 - LT 26, LEM - BA", representant: "Cristiane Rodrigues", role: "Representante", operation: "Seg a Sex, 08h às 18h", mail: "cristiane@somosempilhadeiras.com.br", phone: "(62) 9 9183-4188", wpp: "5562991834188", city: "Luís Eduardo Magalhães", text: 'Energia e força para o nordeste, com frota especializada.' },
-  'PE': { date: '2025', address: "Base Operacional Recife", representant: "Alan Santana", role: "Gerente Regional", operation: "Seg a Sex, 07h às 17h", mail: "alan@somosempilhadeiras.com.br", phone: "(81) 9 9258-6532", wpp: '5581992586532', city: "Recife", text: "Nova base estratégica para o litoral e indústrias da região." },
+  'PE': { date: '2025', address: "Estrada de Curcurana 572, Barra de Jangada, Jaboatão dos Guararapes PE, 54490-064.", representant: "Alan Santana", role: "Gerente Regional", operation: "Seg a Sex, 07h às 17h", mail: "alan@somosempilhadeiras.com.br", phone: "(81) 9 9258-6532", wpp: '5581992586532', city: "Recife", text: "Nova base estratégica para o litoral e indústrias da região." },
 };
 
 interface UnitDetailsProps {
@@ -56,7 +56,7 @@ export default function UnitDetails({ stateId }: UnitDetailsProps) {
     <div className="min-h-screen bg-slate-50">
       
       {/* 1. HERO BANNER: Visual Acolhedor e Moderno */}
-      <div className="relative bg-gradient-to-r from-[#005831] to-[#057a44] text-white pb-32 pt-20 overflow-hidden">
+      <div className="relative bg-linear-to-r from-[#005831] to-[#057a44] text-white pb-32 pt-20 overflow-hidden">
         {/* Elemento decorativo de fundo */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-black opacity-10 rounded-full translate-y-1/3 -translate-x-1/3 blur-3xl"></div>

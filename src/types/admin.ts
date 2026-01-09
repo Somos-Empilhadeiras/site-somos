@@ -47,7 +47,6 @@ export interface BannerConfig {
   contentAlign?: 'left' | 'center' | 'right';
 }
 
-// === AQUI ESTÁ A CORREÇÃO DO ADMINITEM ===
 export interface AdminItem {
   id?: string;
   name: string;
@@ -66,7 +65,7 @@ export interface AdminItem {
   brand?: string;
   model?: string;
   year?: string | number;
-  capacity?: number;
+  capacity?: string;
   engine?: string;
   
   // Máquinas (Elétricas/Detalhes)
@@ -103,7 +102,6 @@ export interface JobVacancy {
   isActive: boolean;
 }
 
-// Se precisar do SLOT_GROUPS me avise, mas a interface acima é a crítica.
 export const SLOT_GROUPS = {
   'Página Inicial': [
       { value: 'home-topo', label: 'Topo (Aviso)' },

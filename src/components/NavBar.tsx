@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, Menu, X, Phone, Package, Wrench, Disc, Pin, MapPin, Zap, Flame } from 'lucide-react';
+import { ChevronDown, Menu, X, Phone, Package, Wrench, Disc, Pin, MapPin, Zap, Flame, Box, DownloadCloud, MessageCircle } from 'lucide-react';
+import Catalog from '@/app/empilhadeiras/page';
+import { REGIONAL_CONTACTS } from '@/lib/constants';
 
 export default function Navbar() {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
+	const [showLocationSelector, setShowLocationSelector] = useState(false);
 
 	const pathname = usePathname();
 
@@ -37,6 +40,19 @@ export default function Navbar() {
 		setIsMobileMenuOpen(false);
 	};
 
+	// --- FUNÇÃO DE CLIQUE NO BOTÃO DE CONTATO ---
+	const handleContactClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+
+		setShowLocationSelector(true);
+	};
+
+	const redirectToRegion = (phone: string) => {
+		const link = `https://wa.me/${phone}`;
+		window.open(link, '_blank');
+		setShowLocationSelector(false);
+	};
+
 	return (
 		<div className='sticky top-0 z-100 w-full'>
 
@@ -60,7 +76,7 @@ export default function Navbar() {
 								Sobre
 							</Link>
 
-							{/* Dropdown Produtos Desktop */}
+							{/* Dropdown E,pilhadeiras Desktop */}
 							<div className="relative group px-4 py-2 cursor-pointer">
 								<Link href="/empilhadeiras" className="flex items-center gap-1 text-slate-600 group-hover:text-[#005831] transition-colors">
 									<span>Empilhadeiras</span>
@@ -74,6 +90,9 @@ export default function Navbar() {
 										</Link>
 										<Link href="/empilhadeiras/combustao" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
 											<Flame size={18} /> <span className="font-medium">Combustão</span>
+										</Link>
+										<Link href="https://workdrive.zohoexternal.com/external/b8d988ad718199f27deafee09ec61346be34a1e685f07b7ecb0edd91b5cb1446?layout=list" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
+											<DownloadCloud size={20} /> <span className="font-medium">Baixar Catalogo Completo</span>
 										</Link>
 									</div>
 								</div>
@@ -101,7 +120,7 @@ export default function Navbar() {
 								</div>
 							</div>
 
-							<Link href="/trabalhe-conosco" className={`px-4 py-2 rounded-full transition-all ${isActive('/trabalhe-conosco')}`}>
+							<Link href="https://br.linkedin.com/company/somosempilhadeiras" className={`px-4 py-2 rounded-full transition-all ${isActive('https://br.linkedin.com/company/somosempilhadeiras')}`}>
 								Trabalhe Conosco
 							</Link>
 
@@ -144,15 +163,83 @@ export default function Navbar() {
 
 						{/* CTA BUTTON (Desktop) */}
 						<div className="hidden lg:block">
-							<Link
-								href="https://wa.me/5562991834188"
-								target="_blank"
+							<button
+								onClick={handleContactClick}
 								className="bg-[#005831] hover:bg-[#004626] text-white px-6 py-2.5 rounded-full font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm"
 							>
 								<Phone size={16} />
 								Fale Conosco
-							</Link>
+							</button>
 						</div>
+
+						{/* --- MODAL DE SELEÇÃO DE REGIÃO (Mantido igual) --- */}
+						{showLocationSelector && (
+							<div
+								className="fixed inset-0 z-9999 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+								onClick={(e) => {
+									e.stopPropagation();
+									setShowLocationSelector(false);
+								}}
+							>
+								<div
+									className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
+									onClick={(e) => e.stopPropagation()}
+								>
+									<div className="bg-[#005831] p-4 flex justify-between items-center">
+										<h3 className="text-white font-bold flex items-center gap-2">
+											<MapPin size={18} />
+											Selecione sua Região
+										</h3>
+										<button
+											onClick={() => setShowLocationSelector(false)}
+											className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+										>
+											<X size={20} />
+										</button>
+									</div>
+
+									<div className="p-6">
+										<p className="text-sm text-slate-600 mb-4 text-center">
+											Para um atendimento mais ágil, escolha a unidade mais próxima:
+										</p>
+
+										<div className="grid gap-3">
+											<button
+												onClick={() => redirectToRegion(REGIONAL_CONTACTS.GO_TO)}
+												className="w-full flex items-center justify-between p-4 rounded-md border border-slate-200 hover:border-[#005831] hover:bg-green-50 transition-all group"
+											>
+												<span className="font-bold text-slate-700 group-hover:text-[#005831]">Goiânia / Tocantins</span>
+												<MessageCircle size={18} className="text-slate-300 group-hover:text-[#005831]" />
+											</button>
+
+											<button
+												onClick={() => redirectToRegion(REGIONAL_CONTACTS.DF)}
+												className="w-full flex items-center justify-between p-4 rounded-md border border-slate-200 hover:border-[#005831] hover:bg-green-50 transition-all group"
+											>
+												<span className="font-bold text-slate-700 group-hover:text-[#005831]">Distrito Federal</span>
+												<MessageCircle size={18} className="text-slate-300 group-hover:text-[#005831]" />
+											</button>
+
+											<button
+												onClick={() => redirectToRegion(REGIONAL_CONTACTS.BA)}
+												className="w-full flex items-center justify-between p-4 rounded-md border border-slate-200 hover:border-[#005831] hover:bg-green-50 transition-all group"
+											>
+												<span className="font-bold text-slate-700 group-hover:text-[#005831]">Bahia</span>
+												<MessageCircle size={18} className="text-slate-300 group-hover:text-[#005831]" />
+											</button>
+
+											<button
+												onClick={() => redirectToRegion(REGIONAL_CONTACTS.PE)}
+												className="w-full flex items-center justify-between p-4 rounded-md border border-slate-200 hover:border-[#005831] hover:bg-green-50 transition-all group"
+											>
+												<span className="font-bold text-slate-700 group-hover:text-[#005831]">Pernambuco</span>
+												<MessageCircle size={18} className="text-slate-300 group-hover:text-[#005831]" />
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						)}
 
 						{/* BOTÃO MENU MOBILE */}
 						<button
@@ -224,8 +311,8 @@ export default function Navbar() {
 							</Link>
 
 							<Link
-								href="/trabalhe-conosco"
-								className={`p-4 rounded-xl font-bold flex items-center justify-between border border-transparent ${pathname === '/trabalhe-conosco' ? 'bg-green-50 text-[#005831] border-green-100' : 'text-slate-700 hover:bg-slate-50'}`}
+								href="https://br.linkedin.com/company/somosempilhadeiras"
+								className={`p-4 rounded-xl font-bold flex items-center justify-between border border-transparent ${pathname === 'https://br.linkedin.com/company/somosempilhadeiras' ? 'bg-green-50 text-[#005831] border-green-100' : 'text-slate-700 hover:bg-slate-50'}`}
 								onClick={handleMobileLinkClick}
 							>
 								Trabalhe Conosco

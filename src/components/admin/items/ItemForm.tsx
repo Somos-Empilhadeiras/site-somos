@@ -72,7 +72,7 @@ export default function ItemForm({ formData, setFormData, subTab, onSubmit, onCa
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className={labelStyle}>Capacidade (KG)</label>
-                        <input type="number" placeholder="Ex: 2500" className="border p-2 rounded text-sm bg-white w-full" value={formData.capacity || ''} onChange={e => setFormData({ ...formData, capacity: Number(e.target.value) })} />
+                        <input placeholder="Ex: 2500 ou 3500" className="border p-2 rounded text-sm bg-white w-full" value={formData.capacity || ''} onChange={e => setFormData({ ...formData, capacity: e.target.value })} />
                     </div>
                     <div className="col-span-1">
                         <label className={labelStyle}>Elevação da Torre</label>

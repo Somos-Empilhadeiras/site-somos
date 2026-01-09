@@ -16,17 +16,10 @@ import {
   Zap,
   ArrowUp,
   Gauge,
-  Battery
+  Battery,
+  Settings2
 } from 'lucide-react';
-import { COMPANY_CONTACTS } from '@/lib/constants';
-
-// --- CONFIGURAÇÃO DOS NÚMEROS POR REGIÃO ---
-const REGIONAL_CONTACTS = {
-  GO_TO: COMPANY_CONTACTS.juliana_phone_raw, 
-  DF: COMPANY_CONTACTS.maike_phone_raw,    
-  BA: COMPANY_CONTACTS.cristiane_phone_raw,    
-  PE: COMPANY_CONTACTS.alan_phone_raw,    
-};
+import { COMPANY_CONTACTS, REGIONAL_CONTACTS } from '@/lib/constants';
 
 interface ItemCardProps {
   empilhadeira: Empilhadeira;
@@ -44,7 +37,7 @@ export default function ItemCard({
   // --- LÓGICA DE IDENTIFICAÇÃO ---
   // Verifica se é uma máquina baseada na existência de 'engine' ou 'model'
   const isMachine = !!(empilhadeira.model || empilhadeira.engine);
-  
+
   // Verifica se é elétrica
   const isElectric = empilhadeira.engine?.toLowerCase().includes('elétric') || (empilhadeira.voltage && empilhadeira.voltage > 0);
 
@@ -65,13 +58,13 @@ export default function ItemCard({
       TIPO DO ITEM (SEMÂNTICA)
   ================================ */
   const itemType = isMachine
-    ? 'Equipamento' 
+    ? 'Empilhadeira'
     : empilhadeira.capacity
       ? 'Peça'
       : 'Serviço';
 
   const TypeIcon =
-    itemType === 'Equipamento'
+    itemType === 'Empilhadeira'
       ? Truck
       : itemType === 'Peça'
         ? Box
@@ -79,9 +72,9 @@ export default function ItemCard({
 
   // --- FUNÇÃO DE CLIQUE NO BOTÃO DE CONTATO ---
   const handleContactClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
 
-    if (itemType === 'Equipamento') {
+    if (itemType === 'Empilhadeira') {
       onWhatsApp(empilhadeira);
     } else {
       setShowLocationSelector(true);
@@ -164,28 +157,49 @@ export default function ItemCard({
 
                 {/* Linha 2: Energia ou Ano */}
                 {isElectric ? (
-                   // Se for elétrica: Tensão
-                   <div className="flex flex-col pt-2 border-t border-slate-200 mt-1 col-span-2">
-                      <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
-                        <Zap size={10} /> Sistema Elétrico
-                      </span>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-slate-700">{empilhadeira.voltage ? `${empilhadeira.voltage}V` : 'Elétrica'}</span>
-                        {empilhadeira.batteryDetails && <span className="text-[10px] text-slate-500 truncate max-w-[100px]">{empilhadeira.batteryDetails}</span>}
-                      </div>
-                   </div>
+                  // Se for elétrica: Tensão
+                  <div className="flex flex-col pt-2 border-t border-slate-200 mt-1">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
+                      <Zap size={10} /> Sistema Elétrico
+                    </span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-slate-700">{empilhadeira.voltage ? `${empilhadeira.voltage}V` : 'Elétrica'}</span>
+                      {empilhadeira.batteryDetails && <span className="text-[10px] text-slate-500 truncate max-w-[100px]">{empilhadeira.batteryDetails}</span>}
+                    </div>
+                  </div>
+
                 ) : (
-                   // Se for combustão: Ano ou Combustível detalhado
-                   <div className="flex flex-col pt-2 border-t border-slate-200 mt-1 col-span-2">
-                      <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
-                        <Gauge size={10} /> Detalhes
-                      </span>
-                      <div className="flex gap-3">
-                         {empilhadeira.year && <span className="text-xs font-bold text-slate-700">{empilhadeira.year}</span>}
-                         <span className="text-xs text-slate-600">Motor Combustão</span>
-                      </div>
-                   </div>
+                  // Se for combustão: Ano ou Combustível detalhado
+                  <div className="flex flex-col pt-2 border-t border-slate-200 mt-1">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
+                      <Gauge size={10} /> Detalhes
+                    </span>
+                    <div className="flex gap-3">
+                      {empilhadeira.year && <span className="text-xs font-bold text-slate-700">{empilhadeira.year}</span>}
+                      <span className="text-xs text-slate-600">Motor Combustão</span>
+                    </div>
+                  </div>
                 )}
+                
+                <div className="flex flex-col border-l border-slate-200 pl-2 border-t mt-1">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
+                    <Calendar size={10} /> Ano
+                  </span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-700">{empilhadeira.year}</span>
+                  </div>
+                </div>
+
+                <div className="col-span-2 flex flex-col border-slate-200 border-t mt-1">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
+                    <Settings size={10} /> Motor
+                  </span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-700">{empilhadeira.engine}</span>
+                    {empilhadeira.batteryDetails && <span className="text-[10px] text-slate-500 truncate max-w-[100px]">{empilhadeira.batteryDetails}</span>}
+                  </div>
+                </div>
+
               </div>
             ) : (
               // --- LAYOUT DE PEÇA/SERVIÇO (Simples) ---
@@ -203,7 +217,7 @@ export default function ItemCard({
                   </span>
                 )}
                 {!empilhadeira.year && !empilhadeira.capacity && (
-                   <span className="text-slate-400 text-xs italic">Toque para ver detalhes técnicos e aplicação.</span>
+                  <span className="text-slate-400 text-xs italic">Toque para ver detalhes técnicos e aplicação.</span>
                 )}
               </div>
             )}
@@ -218,19 +232,19 @@ export default function ItemCard({
               <span className="text-lg font-extrabold text-[#005831]">
                 {empilhadeira.price > 0
                   ? empilhadeira.price.toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL'
-                    })
+                    style: 'currency',
+                    currency: 'BRL'
+                  })
                   : 'Sob consulta'}
               </span>
             </div>
 
             <button
               onClick={handleContactClick}
-              className="bg-[#005831] hover:bg-[#004626] text-white p-2.5 rounded-lg transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 group/btn"
+              className="bg-[#005831] hover:bg-[#004626] text-white p-2.5 rounded-lg transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-0.5 group/btn"
               title="Solicitar orçamento via WhatsApp"
             >
-              <span className="text-xs font-bold hidden sm:inline-block max-w-0 overflow-hidden group-hover/btn:max-w-xs transition-all duration-500 whitespace-nowrap">Orçamento</span>
+              <span className="text-xs font-bold hidden sm:inline-block max-w-0 overflow-hidden group-hover/btn:max-w-xs transition-all duration-500 whitespace-nowrap">Solicitar Orçamento</span>
               <MessageCircle size={20} />
             </button>
           </div>
@@ -239,14 +253,14 @@ export default function ItemCard({
 
       {/* --- MODAL DE SELEÇÃO DE REGIÃO (Mantido igual) --- */}
       {showLocationSelector && (
-        <div 
-          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+        <div
+          className="fixed inset-0 z-9999 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
           onClick={(e) => {
-             e.stopPropagation();
-             setShowLocationSelector(false);
+            e.stopPropagation();
+            setShowLocationSelector(false);
           }}
         >
-          <div 
+          <div
             className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
@@ -255,7 +269,7 @@ export default function ItemCard({
                 <MapPin size={18} />
                 Selecione sua Região
               </h3>
-              <button 
+              <button
                 onClick={() => setShowLocationSelector(false)}
                 className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-1 transition-colors"
               >

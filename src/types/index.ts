@@ -13,7 +13,7 @@ export interface Empilhadeira {
   year?: string;
 
   // Especificações Técnicas (Baseado nas imagens)
-  capacity?: number;       // Carga (kg) - ex: 3000
+  capacity?: string;       // Carga (kg) - ex: 3000
   loadCenter?: number;     // Centro de Carga (mm) - ex: 500
   lift_height?: string;     // Elevação dos Garfos - ex: "Até 7000mm" ou "6 metros"
 

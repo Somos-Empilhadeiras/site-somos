@@ -124,8 +124,8 @@ export default function HomeUnitsSection() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { label: 'Bases físicas', value: '5', icon: Building2 },
-            { label: 'Estados atendidos', value: '+4', icon: Truck },
-            { label: 'Suporte técnico', value: '24h', icon: ShieldCheck },
+            { label: 'Estados atendidos', value: '5', icon: Truck },
+            { label: 'Suporte técnico', value: 'Suporte de Pós Venda', icon: ShieldCheck },
             { label: 'Equipe dedicada', value: 'Especializada', icon: Users },
           ].map((item, i) => (
             <div

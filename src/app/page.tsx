@@ -8,58 +8,10 @@ import {
   PackageSearch, Phone, ShieldCheck, TrendingUp, Users, Wrench,
   Building2, Leaf
 } from 'lucide-react';
-import BrazilMap from '../components/BrazilMap';
 import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import HomeUnitsSection from '@/components/HOmeUnitsSection';
 
-// DADOS DO SLIDER
-const SLIDES = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop",
-    preTitle: "TECNOLOGIA HELI PARA O SEU NEGÓCIO",
-    title: "Eleve a Produtividade da sua Operação Logística",
-    description: "Distribuidora oficial para Goiás, DF, Tocantins e Bahia. Equipamentos de alta performance para quem não pode parar.",
-    ctaPrimary: "Ver Catálogo",
-    ctaSecondary: "Falar com Consultor",
-    linkPrimary: "/catalogo",
-    linkSecondary: "https://wa.me/5562991834188"
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=2070&auto=format&fit=crop",
-    preTitle: "FORÇA BRUTA E DURABILIDADE",
-    title: "Soluções Robustas para Terrenos Difíceis",
-    description: "Linha completa de empilhadeiras a combustão e todo-terreno. Potência que sua obra precisa com a economia que você quer.",
-    ctaPrimary: "Linha Diesel",
-    ctaSecondary: "Solicitar Cotação",
-    linkPrimary: "/catalogo?categoria=combustao",
-    linkSecondary: "/contato"
-  },
-  {
-    id: 3,
-    image: "https://plus.unsplash.com/premium_photo-1661964014750-963a28aeddea?q=80&w=2069&auto=format&fit=crop",
-    preTitle: "SUSTENTABILIDADE E ECONOMIA",
-    title: "A Revolução das Empilhadeiras de Lítio",
-    description: "Zero emissões, carregamento rápido e manutenção reduzida. O futuro da movimentação de carga já chegou.",
-    ctaPrimary: "Ver Elétricas",
-    ctaSecondary: "Calcular Economia",
-    linkPrimary: "/catalogo?categoria=eletrica",
-    linkSecondary: "/contato"
-  }
-];
-
 export default function Home() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  // Auto-play do Slider
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <main className="min-h-screen bg-white">
 
@@ -74,9 +26,9 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-green-800">
             {[
-              { icon: ShieldCheck, title: "Garantia Estendida", desc: "Segurança total na sua compra" },
+              { icon: ShieldCheck, title: "Garantia de Disponibilidade", desc: "Segurança total na sua compra" },
               { icon: Wrench, title: "Peças Genuínas", desc: "Estoque local para reposição imediata" },
-              { icon: Clock, title: "Suporte 24h", desc: "Atendimento técnico especializado" }
+              { icon: Clock, title: "Suporte de Pós Venda", desc: "Atendimento técnico especializado" }
             ].map((item, idx) => (
               <div key={idx} className="py-8 px-6 flex items-center justify-center md:justify-start gap-5 group hover:bg-[#004d2b] transition-colors">
                 <div className="p-3 bg-white/10 rounded-xl text-yellow-400 group-hover:scale-110 transition-transform">
@@ -102,7 +54,7 @@ export default function Home() {
             {/* Imagem com Elementos Gráficos */}
             <div className="lg:w-1/2 relative">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
-                <div className="aspect-[4/3] bg-slate-100">
+                <div className="aspect-4/3 bg-slate-100">
                   <img
                     src="/images/heli-brasil.png"
                     alt="Empilhadeira HELI"
@@ -112,7 +64,7 @@ export default function Home() {
                 {/* Badge Flutuante */}
                 <div className="absolute top-6 left-6 bg-white/95 backdrop-blur px-6 py-4 rounded-xl shadow-lg border-l-4 border-red-600">
                   <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Parceria Oficial</p>
-                  <p className="text-red-600 font-black text-3xl leading-none">HELI</p>
+                  <img src="/heli.png" alt="HELI Logo" className='w-32 h-8'/>
                 </div>
               </div>
               {/* Elemento Decorativo de Fundo */}
@@ -127,7 +79,7 @@ export default function Home() {
                   <span className="font-bold text-slate-500 uppercase tracking-widest text-sm">Excelência Global</span>
                 </div>
                 <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight">
-                  Distribuidor Autorizado <span className="text-red-600">HELI</span>
+                  Distribuidor Autorizado <img src="/heli.png" alt="HELI Logo" className='w-40 h-10'/>
                 </h2>
                 <p className="mt-6 text-lg text-slate-600 leading-relaxed">
                   A <strong>Somos Empilhadeiras</strong> orgulha-se de representar oficialmente a HELI, uma das 10 maiores fabricantes do mundo.
@@ -148,7 +100,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <Link href="/catalogo" className="inline-flex items-center gap-2 text-red-700 font-bold hover:text-red-800 transition-colors text-lg border-b-2 border-transparent hover:border-red-700 pb-1">
+              <Link href="/empilhadeiras" className="inline-flex items-center gap-2 text-red-700 font-bold hover:text-red-800 transition-colors text-lg border-b-2 border-transparent hover:border-red-700 pb-1">
                 Conheça a linha completa <ChevronRight size={20} />
               </Link>
             </div>
@@ -176,7 +128,7 @@ export default function Home() {
               <div className="w-14 h-14 bg-yellow-100 rounded-xl flex items-center justify-center mb-6 text-yellow-700 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
                 <PackageSearch size={28} />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Venda de Novos</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Vendas</h3>
               <p className="text-slate-600 mb-6 leading-relaxed">
                 Renove sua frota com equipamentos zero km HELI. Garantia de fábrica e consultoria para escolher o modelo ideal.
               </p>
@@ -191,7 +143,7 @@ export default function Home() {
               <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-6 text-[#005831] group-hover:bg-[#005831] group-hover:text-white transition-colors">
                 <Building2 size={28} />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Locação de Frota</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Locação</h3>
               <p className="text-slate-600 mb-6 leading-relaxed">
                 Evite descapitalização. Planos de locação flexíveis com manutenção inclusa para sua operação nunca parar.
               </p>
@@ -209,7 +161,7 @@ export default function Home() {
               <p className="text-slate-600 mb-6 leading-relaxed">
                 Migre para o elétrico. Baterias de íon-lítio com carga rápida, zero manutenção e alta eficiência energética.
               </p>
-              <Link href="/catalogo?categoria=eletrica" className="text-[#005831] font-bold text-sm uppercase tracking-wide flex items-center gap-1 group-hover:gap-2 transition-all">
+              <Link href="https://helibrasil.com/sustentabilidade/posicionamento-esg" className="text-[#005831] font-bold text-sm uppercase tracking-wide flex items-center gap-1 group-hover:gap-2 transition-all">
                 Conhecer Tecnologia <ArrowRight size={16} />
               </Link>
             </div>
@@ -222,7 +174,7 @@ export default function Home() {
       {/* 5. LOCAÇÃO E VENDA (Call to Action Forte) */}
       <section className="relative py-24 bg-[#005831] overflow-hidden">
         {/* Pattern de Fundo */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"></div>
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-size-[20px_20px]"></div>
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
@@ -257,7 +209,7 @@ export default function Home() {
                     Chamar no WhatsApp
                   </a>
                   <Link
-                    href="/contato"
+                    href="mailto:comercial@somosempilhadeiras.com.br"
                     className="flex items-center justify-center gap-3 w-full bg-white hover:bg-slate-100 text-[#005831] py-4 rounded-xl font-bold shadow-lg transition-colors"
                   >
                     <Mail size={24} />
@@ -274,35 +226,6 @@ export default function Home() {
 
       {/* 6. MAPA (Design Limpo) */}
       <section id="unidades" className="py-20 md:py-28 bg-white">
-        {/* <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row gap-12 items-center">
-            <div className="md:w-1/3 space-y-6">
-              <div className="inline-block p-3 bg-green-50 rounded-xl text-[#005831] mb-2">
-                <MapPin size={32} />
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-                Presença Estratégica
-              </h2>
-              <p className="text-slate-600 text-lg leading-relaxed">
-                Nossas bases estão posicionadas nas principais rotas logísticas do Centro-Oeste e Nordeste, garantindo agilidade no atendimento e entrega de peças.
-              </p>
-              <div className="space-y-3 pt-4">
-                {['Goiás (Matriz)', 'Distrito Federal', 'Tocantins', 'Bahia', 'Pernambuco'].map((estado) => (
-                  <div key={estado} className="flex items-center gap-3 text-slate-800 font-medium p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <div className="w-2 h-2 rounded-full bg-[#005831]"></div>
-                    {estado}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="md:w-2/3 w-full h-[500px] bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden relative">
-              <BrazilMap />
-              <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-4 py-2 rounded-lg text-xs font-bold text-slate-500 shadow-sm border border-slate-200">
-                Clique no estado para ver a unidade
-              </div>
-            </div>
-          </div>
-        </div> */}
         <HomeUnitsSection />
       </section>
 
