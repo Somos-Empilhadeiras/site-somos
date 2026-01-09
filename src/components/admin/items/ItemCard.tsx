@@ -76,24 +76,18 @@ export default function ItemCard({
 
     if (itemType === 'Empilhadeira') {
       const baseUrl = window.location.origin;
-
-      // Define a categoria correta
       const categoria = empilhadeira.engine?.includes("Elétrica") ? "eletricas" : "combustao";
 
-      // MUDANÇA AQUI: Usamos '?q=' com o NOME da máquina
-      // encodeURIComponent é vital para lidar com espaços no nome (ex: "CPD 25")
+      // Link com busca automática
       const linkDireto = `${baseUrl}/empilhadeiras/${categoria}?q=${encodeURIComponent(empilhadeira.name)}`;
 
-      // Verifica se tem ano, senão não mostra nada
-      const anoInfo = empilhadeira.year ? ` | Ano ${empilhadeira.year}` : '';
+      // --- MENSAGEM MELHORADA AQUI ---
+      const mensagem = `Olá! Vi no site da Somos e gostaria de uma *cotação* para este equipamento:
 
-      const mensagem = `Olá, vim através do site.
-Tenho interesse técnico nesta empilhadeira:
+\u{1F69C} *Modelo:* ${empilhadeira.name}
+\u{1F517}*Link:* ${linkDireto}
 
-*${empilhadeira.name}${anoInfo}*
-
-Gostaria de saber mais detalhes e condições de pagamento.
-Link: ${linkDireto}`;
+Poderia me passar valores e disponibilidade?`;
 
       const linkZap = `https://wa.me/5562991834188?text=${encodeURIComponent(mensagem)}`;
       window.open(linkZap, '_blank');

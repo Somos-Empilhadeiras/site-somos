@@ -1,51 +1,44 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react'; // <--- Adicione Suspense
 import {
   Search,
-  Zap, // Ícone de Raio
+  Zap,
   Package,
   ArrowDownCircle,
   X
 } from 'lucide-react';
-import { useSearchParams } from 'next/navigation'; // <--- IMPORTANTE: Importação necessária
+import { useSearchParams } from 'next/navigation';
 
 import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import ItemCard from '@/components/admin/items/ItemCard';
 import ModalItem from '@/components/admin/items/ModalItem';
 import { Empilhadeira } from '@/types';
 
-/* ===============================
-   CONFIGURAÇÕES
-================================ */
-const PAGE_SIZE = 8; // Quantos itens mostrar por vez (paginação local)
+const PAGE_SIZE = 8;
 
-export default function ElectricPage() {
-  const [allItems, setAllItems] = useState<Empilhadeira[]>([]); // Todos os itens carregados
-  const [visibleItems, setVisibleItems] = useState<Empilhadeira[]>([]); // Itens visíveis na tela
+// 1. Mudei o nome do componente principal anterior para "ElectricContent"
+// e removi o "export default" dele.
+function ElectricContent() {
+  const [allItems, setAllItems] = useState<Empilhadeira[]>([]);
+  const [visibleItems, setVisibleItems] = useState<Empilhadeira[]>([]);
   const [selectedItem, setSelectedItem] = useState<Empilhadeira | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
 
-  // 1. Hook para ler a URL (NOVO)
   const searchParams = useSearchParams();
-  const buscaNaUrl = searchParams.get('q'); // Pega o valor de ?q=NomeDaMaquina
+  const buscaNaUrl = searchParams.get('q');
 
-  /* ===============================
-      BUSCAR E FILTRAR (Lógica Local)
-  ================================ */
   const fetchAndFilterItems = useCallback(async () => {
     try {
       setLoading(true);
-      // Buscamos 1000 itens para garantir que pegamos todo o estoque
       const response = await fetch(`/api/empilhadeiras?limit=1000&offset=0`);
       if (!response.ok) throw new Error('Erro ao buscar dados');
       
       const data: Empilhadeira[] = await response.json();
 
-      // FILTRO RIGOROSO: Apenas Elétricas/Lítio
       const electricOnly = data.filter(i => 
         i.engine?.toLowerCase().includes('elétric') || 
         i.engine?.toLowerCase().includes('lítio') || 
@@ -60,23 +53,19 @@ export default function ElectricPage() {
     }
   }, []);
 
-  // Carga Inicial dos Dados
   useEffect(() => {
     fetchAndFilterItems();
   }, [fetchAndFilterItems]);
 
-  // 2. Effect para aplicar a busca vinda da URL (NOVO)
   useEffect(() => {
     if (buscaNaUrl) {
       setSearchTerm(buscaNaUrl);
     }
   }, [buscaNaUrl]);
 
-  // Atualiza a lista visível quando a busca ou a contagem muda
   useEffect(() => {
     let filtered = allItems;
 
-    // Aplica busca por texto se houver
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter(item => 
@@ -86,37 +75,30 @@ export default function ElectricPage() {
       );
     }
 
-    // Paginação local ("Ver mais")
     setVisibleItems(filtered.slice(0, visibleCount));
 
   }, [allItems, searchTerm, visibleCount]);
 
-  /* ===============================
-      HANDLERS
-  ================================ */
   const handleLoadMore = () => {
     setVisibleCount(prev => prev + PAGE_SIZE);
   };
 
   const handleWhatsAppRedirect = (item: Empilhadeira) => {
     const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE!;
-    // Ajustado para mandar o link de busca na categoria elétrica
     const baseUrl = window.location.origin;
-    const link = `${baseUrl}/empilhadeiras/eletricas?q=${encodeURIComponent(item.name)}`;
-
-    let message = `*SOLICITAÇÃO DE ORÇAMENTO (ELÉTRICA)*\n\n`;
-    message += `⚡ *Modelo:* ${item.brand} ${item.model}\n`;
-    if (item.year) message += `📅 *Ano:* ${item.year}\n`;
-    message += `\n🔗 Link: ${link}`;
     
-    window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, '_blank');
+    // MENSAGEM MELHORADA (Opção 1)
+    const link = `${baseUrl}/empilhadeiras/eletricas?q=${encodeURIComponent(item.name)}`;
+    const mensagem = `Olá! Vi no site da Somos e gostaria de uma *cotação* para este equipamento:
+
+🚜 *Modelo:* ${item.name}
+🔗 *Link:* ${link}
+
+Poderia me passar valores e disponibilidade?`;
+    
+    window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
-  /* ===============================
-      RENDER
-  ================================ */
-  // Verifica se tem mais itens para mostrar
-  // Lógica ajustada para considerar o filtro ativo na conta do "Ver Mais"
   const currentFilteredCount = allItems.filter(item => 
     !searchTerm || 
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -130,7 +112,6 @@ export default function ElectricPage() {
     <main className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
       <DynamicBanner id="catalogo-topo" />
 
-      {/* HERO: AZUL PARA ELÉTRICAS */}
       <section className="bg-blue-600 py-14">
         <div className="container mx-auto px-4 text-center">
           <div className="inline-flex items-center justify-center p-3 bg-white/10 rounded-full mb-4 text-white">
@@ -145,7 +126,6 @@ export default function ElectricPage() {
         </div>
       </section>
 
-      {/* BUSCA */}
       <section className="container mx-auto px-4 -mt-8 z-10 relative">
         <div className="bg-white rounded-2xl shadow-lg p-4 max-w-2xl mx-auto">
           <div className="relative">
@@ -166,7 +146,6 @@ export default function ElectricPage() {
         </div>
       </section>
 
-      {/* CONTEÚDO */}
       <section className="flex-1 container mx-auto px-4 py-16">
         {loading ? (
           <div className="flex flex-col items-center py-32">
@@ -233,5 +212,15 @@ export default function ElectricPage() {
 
       <DynamicBanner id="catalogo-rodape" />
     </main>
+  );
+}
+
+// 2. CRIEI ESTE NOVO COMPONENTE "WRAPPER" QUE É O QUE O BUILD PEDE
+export default function ElectricPage() {
+  return (
+    // O fallback é o que aparece enquanto a URL é lida (pode ser um spinner simples)
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+      <ElectricContent />
+    </Suspense>
   );
 }

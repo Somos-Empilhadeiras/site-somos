@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react'; // <--- Suspense adicionado
 import {
   Search,
-  Flame, // Ícone de Fogo
+  Flame,
   Package,
   ArrowDownCircle,
   X
@@ -17,7 +17,8 @@ import { useSearchParams } from 'next/navigation';
 
 const PAGE_SIZE = 8;
 
-export default function CombustionPage() {
+// 1. Renomeie o componente principal (removemos o export default daqui)
+function CombustionContent() {
   const [allItems, setAllItems] = useState<Empilhadeira[]>([]);
   const [visibleItems, setVisibleItems] = useState<Empilhadeira[]>([]);
   const [selectedItem, setSelectedItem] = useState<Empilhadeira | null>(null);
@@ -25,22 +26,32 @@ export default function CombustionPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
-
-  // 1. Hook para ler a URL
+  
   const searchParams = useSearchParams();
-  const buscaNaUrl = searchParams.get('q'); // Pega o valor de ?q=...
+  const buscaNaUrl = searchParams.get('q');
+  const idNaUrl = searchParams.get('id');
 
-  // 2. Lógica de Busca e Filtro (Combustão)
+  // Efeito para abrir Modal via URL
+  useEffect(() => {
+    // Só tenta abrir modal se tivermos itens carregados
+    if (idNaUrl && allItems.length > 0) {
+      const itemAlvo = allItems.find(i => String(i.id) === idNaUrl);
+      if (itemAlvo) {
+        setSelectedItem(itemAlvo);
+        // Opcional: Limpar URL visualmente
+        // window.history.replaceState(null, '', window.location.pathname);
+      }
+    }
+  }, [idNaUrl, allItems]);
+
   const fetchAndFilterItems = useCallback(async () => {
     try {
       setLoading(true);
-      // Busca geral
       const response = await fetch(`/api/empilhadeiras?limit=1000&offset=0`);
       if (!response.ok) throw new Error('Erro ao buscar dados');
 
       const data: Empilhadeira[] = await response.json();
 
-      // FILTRO RIGOROSO: Apenas Combustão/GLP/Diesel
       const combustionOnly = data.filter(i =>
         i.engine?.toLowerCase().includes('combustão') ||
         i.engine?.toLowerCase().includes('glp') ||
@@ -55,19 +66,17 @@ export default function CombustionPage() {
     }
   }, []);
 
-  // Carga Inicial
   useEffect(() => {
     fetchAndFilterItems();
   }, [fetchAndFilterItems]);
 
-  // 3. Efeito para aplicar a busca vinda da URL
+  // Efeito para preencher busca via URL
   useEffect(() => {
     if (buscaNaUrl) {
       setSearchTerm(buscaNaUrl);
     }
   }, [buscaNaUrl]);
 
-  // Atualiza a lista visível
   useEffect(() => {
     let filtered = allItems;
     if (searchTerm) {
@@ -85,23 +94,24 @@ export default function CombustionPage() {
     setVisibleCount(prev => prev + PAGE_SIZE);
   };
 
-  // 4. WhatsApp com Link de Busca
   const handleWhatsAppRedirect = (item: Empilhadeira) => {
     const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE!;
     const baseUrl = window.location.origin;
     
-    // Link aponta para esta página com a busca preenchida
+    // Link ajustado para categoria combustão com busca
     const link = `${baseUrl}/empilhadeiras/combustao?q=${encodeURIComponent(item.name)}`;
     
-    let message = `*SOLICITAÇÃO DE ORÇAMENTO (COMBUSTÃO)*\n\n`;
-    message += `🔥 *Modelo:* ${item.brand} ${item.model}\n`;
-    if (item.year) message += `📅 *Ano:* ${item.year}\n`;
-    message += `\n🔗 Link: ${link}`;
+    // EMOJIS CORRIGIDOS (UNICODE)
+    const mensagem = `Olá! Vi no site da Somos e gostaria de uma *cotação* para este equipamento:
+
+\u{1F69C} *Modelo:* ${item.name}
+\u{1F517} *Link:* ${link}
+
+Poderia me passar valores e disponibilidade?`;
     
-    window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(mensagem)}`, '_blank');
   };
 
-  // Lógica para saber se tem mais itens
   const currentFilteredCount = allItems.filter(item => 
     !searchTerm || 
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -115,7 +125,6 @@ export default function CombustionPage() {
     <main className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
       <DynamicBanner id="catalogo-topo" />
 
-      {/* HERO: LARANJA PARA COMBUSTÃO */}
       <section className="bg-orange-600 py-14">
         <div className="container mx-auto px-4 text-center">
           <div className="inline-flex items-center justify-center p-3 bg-white/10 rounded-full mb-4 text-white">
@@ -130,7 +139,6 @@ export default function CombustionPage() {
         </div>
       </section>
 
-      {/* BUSCA */}
       <section className="container mx-auto px-4 -mt-8 z-10 relative">
         <div className="bg-white rounded-2xl shadow-lg p-4 max-w-2xl mx-auto">
           <div className="relative">
@@ -151,7 +159,6 @@ export default function CombustionPage() {
         </div>
       </section>
 
-      {/* CONTEÚDO */}
       <section className="flex-1 container mx-auto px-4 py-16">
         {loading ? (
           <div className="flex flex-col items-center py-32">
@@ -218,5 +225,14 @@ export default function CombustionPage() {
 
       <DynamicBanner id="catalogo-rodape" />
     </main>
+  );
+}
+
+// 2. Novo componente Wrapper com Suspense
+export default function CombustionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+      <CombustionContent />
+    </Suspense>
   );
 }
