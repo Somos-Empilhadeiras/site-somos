@@ -69,7 +69,6 @@ export default function Footer() {
 								<li><Link href="/empilhadeiras">Todas</Link></li>
 								<li><Link href="/empilhadeiras/eletricas">Elétricas</Link></li>
 								<li><Link href="/empilhadeiras/combustao">Combustão</Link></li>
-								<li><Link href="/empilhadeiras/rebocadores">Rebocadores</Link></li>
 							</ul>
 						</div>
 
@@ -77,9 +76,7 @@ export default function Footer() {
 						<div>
 							<p className="font-semibold mb-3">Produtos</p>
 							<ul className="space-y-2">
-								<li><Link href="/produtos/pecas">Peças</Link></li>
-								<li><Link href="/produtos/servicos">Serviços</Link></li>
-								<li><Link href="/produtos/pneus">Pneus</Link></li>
+								<li><Link href="/produtos">Todos os Produtos</Link></li>
 							</ul>
 						</div>
 
