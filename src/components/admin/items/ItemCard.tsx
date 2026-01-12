@@ -39,7 +39,7 @@ export default function ItemCard({
   const isMachine = !!(empilhadeira.model || empilhadeira.engine);
 
   // Verifica se é elétrica
-  const isElectric = empilhadeira.engine?.toLowerCase().includes('elétric') || (empilhadeira.voltage && empilhadeira.voltage > 0);
+  const isElectric = empilhadeira.engine?.includes('Elétrica');
 
   const titulo = empilhadeira.model
     ? `${empilhadeira.brand} ${empilhadeira.model}`
@@ -123,14 +123,14 @@ Poderia me passar valores e disponibilidade?`;
           )}
 
           {/* Badge Superior Esquerdo (Tipo de Item) */}
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/90 backdrop-blur px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-700 border shadow-sm uppercase tracking-wide">
+          <div className={"absolute top-3 left-3 flex items-center gap-1.5 bg-white/90 backdrop-blur px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-700 border shadow-sm uppercase tracking-wide"}>
             <TypeIcon size={12} />
             {itemType}
           </div>
 
           {/* Badge Superior Direito (Apenas para Máquinas - Motorização) */}
           {isMachine && empilhadeira.engine && (
-            <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-md text-[10px] font-bold text-white shadow-sm uppercase tracking-wide ${isElectric ? 'bg-blue-600' : 'bg-orange-600'}`}>
+            <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-md text-[10px] font-bold text-white shadow-sm uppercase tracking-wide ${isElectric ? 'bg-[#67DB1A]' : 'bg-orange-600'}`}>
               {empilhadeira.engine}
             </div>
           )}

@@ -40,7 +40,7 @@ const ContactModal = ({ isOpen, onClose, category }: ContactModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-9999 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
@@ -129,8 +129,8 @@ export default function ProductsPage() {
       description: 'Peças de alta durabilidade para manter sua empilhadeira operando com segurança.',
       icon: Package,
       details: ['Filtros e Óleos', 'Componentes de Motor', 'Sistema Hidráulico', 'Elétrica e Sensores'],
-      color: 'bg-blue-50 border-blue-100 text-blue-700',
-      btnColor: 'bg-blue-600 hover:bg-blue-700'
+      color: ' border-[#474747] text-[#00804A]',
+      btnColor: 'bg-[#474747] hover:bg-[#51AE14]'
     },
     {
       id: 'servicos',
@@ -138,8 +138,8 @@ export default function ProductsPage() {
       description: 'Manutenção técnica realizada por profissionais experientes e qualificados.',
       icon: Wrench,
       details: ['Manutenção Preventiva', 'Reforma de Máquinas', 'Diagnóstico Técnico', 'Suporte Especializado'],
-      color: 'bg-orange-50 border-orange-100 text-orange-700',
-      btnColor: 'bg-orange-600 hover:bg-orange-700'
+      color: ' border-[#474747] text-[#00804A]',
+      btnColor: 'bg-[#474747] hover:bg-[#51AE14]'
     },
     {
       id: 'pneus',
@@ -147,8 +147,8 @@ export default function ProductsPage() {
       description: 'Opções robustas para garantir estabilidade e tração em qualquer operação.',
       icon: Disc,
       details: ['Pneus Pneumáticos', 'Pneus Superelásticos', 'Pneus Maciços', 'Serviço de Prensagem'],
-      color: 'bg-slate-50 border-slate-200 text-slate-700',
-      btnColor: 'bg-slate-800 hover:bg-slate-900'
+      color: ' border-[#474747] text-[#00804A]',
+      btnColor: 'bg-[#474747] hover:bg-[#51AE14]'
     }
   ];
 

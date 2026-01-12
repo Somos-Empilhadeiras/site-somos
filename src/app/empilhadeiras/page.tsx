@@ -203,7 +203,7 @@ export default function Catalog() {
                         onClick={() => scrollToSection('sessao-eletrica')} 
                         className="group bg-white border border-slate-200 hover:border-blue-300 hover:shadow-md p-4 rounded-xl transition-all flex items-center gap-4 text-left"
                     >
-                        <div className="bg-blue-50 text-blue-600 p-3 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <div className="bg-blue-50 text-[#67DB1A] p-3 rounded-lg group-hover:bg-[#67DB1A] group-hover:text-white transition-colors">
                             <Zap size={24} />
                         </div>
                         <div>
@@ -217,7 +217,7 @@ export default function Catalog() {
                         onClick={() => scrollToSection('sessao-combustao')} 
                         className="group bg-white border border-slate-200 hover:border-orange-300 hover:shadow-md p-4 rounded-xl transition-all flex items-center gap-4 text-left"
                     >
-                        <div className="bg-orange-50 text-orange-600 p-3 rounded-lg group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                        <div className="bg-orange-50 text-[#FFAD16] p-3 rounded-lg group-hover:bg-[#FFAD16] group-hover:text-white transition-colors">
                             <Flame size={24} />
                         </div>
                         <div>
