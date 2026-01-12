@@ -73,7 +73,7 @@ export async function POST(req: Request) {
           load_center: body.loadCenter || null,
           battery_details: body.batteryDetails || null,
           charger_type: body.chargerType || null,
-          technical_sheet_url: body.technicalSheetUrl || null,
+          technical_sheet_url: body.technicalSheetUrl ||  body.technical_sheet_url || null,
           
           // REMOVIDO: type (pois não existe na tabela empilhadeiras)
         };
@@ -120,7 +120,7 @@ export async function PUT(req: Request) {
             load_center: body.loadCenter || null,
             battery_details: body.batteryDetails || null,
             charger_type: body.chargerType || null,
-            technical_sheet_url: body.technicalSheetUrl || null,
+            technical_sheet_url: body.technicalSheetUrl ||  body.technical_sheet_urlnull,
 
             updated_at: new Date()
         };

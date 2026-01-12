@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react'; // <--- Suspense adicionado
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import {
   Search,
   Flame,

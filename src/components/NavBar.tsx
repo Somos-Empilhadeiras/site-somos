@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, Menu, X, Phone, Package, Wrench, Disc, Pin, MapPin, Zap, Flame, Box, DownloadCloud, MessageCircle } from 'lucide-react';
-import Catalog from '@/app/empilhadeiras/page';
+import { ChevronDown, Menu, X, Phone, MapPin, Zap, Flame, DownloadCloud, MessageCircle } from 'lucide-react';
 import { REGIONAL_CONTACTS } from '@/lib/constants';
 
 export default function Navbar() {
@@ -243,6 +242,7 @@ export default function Navbar() {
 					<div className="lg:hidden bg-white fixed inset-0 top-[84px] z-50 overflow-y-auto pb-20 animate-in slide-in-from-right-10 duration-200">
 						<div className="container mx-auto px-4 py-6 flex flex-col gap-2">
 
+							{/* BOTAO INICIO MOBILE */}
 							<Link
 								href="/"
 								className={`p-4 rounded-xl font-bold flex items-center justify-between border border-transparent ${pathname === '/' ? 'bg-green-50 text-[#005831] border-green-100' : 'text-slate-700 hover:bg-slate-50'}`}
@@ -251,13 +251,30 @@ export default function Navbar() {
 								Início
 							</Link>
 
-							<Link
-								href="/empilhadeiras"
-								className={`p-4 rounded-xl font-bold flex items-center justify-between border border-transparent ${pathname === '/empilhadeiras' ? 'bg-green-50 text-[#005831] border-green-100' : 'text-slate-700 hover:bg-slate-50'}`}
-								onClick={handleMobileLinkClick}
-							>
-								Empilhadeiras
-							</Link>
+							{/* DROPDOWN MOBILE: PRODUTOS */}
+							<div className="border border-transparent rounded-xl overflow-hidden">
+								<button
+									onClick={() => toggleSubmenu('empilhadeiras')}
+									className={`w-full p-4 font-bold flex items-center justify-between text-slate-700 hover:bg-slate-50 transition-colors ${expandedMenu === 'produtos' ? 'bg-slate-50' : ''}`}
+								>
+									Empilhadeiras
+									<ChevronDown size={20} className={`transition-transform duration-300 ${expandedMenu === 'empilhadeiras' ? 'rotate-180 text-[#005831]' : 'text-slate-400'}`} />
+								</button>
+
+								{expandedMenu === 'empilhadeiras' && (
+									<div className="bg-slate-50 px-4 pb-4 grid gap-2 animate-in slide-in-from-top-2">
+										<Link href="/empilhadeiras/eletricas" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
+											<Zap size={18} /> <span className="font-medium">Elétricas</span>
+										</Link>
+										<Link href="/empilhadeiras/combustao" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
+											<Flame size={18} /> <span className="font-medium">Combustão</span>
+										</Link>
+										<Link href="https://workdrive.zohoexternal.com/external/b8d988ad718199f27deafee09ec61346be34a1e685f07b7ecb0edd91b5cb1446?layout=list" className="flex items-center gap-3 px-3 py-3 hover:bg-green-50 text-slate-700 hover:text-[#005831] rounded-lg transition-colors">
+											<DownloadCloud size={20} /> <span className="font-medium">Baixar Catalogo Completo</span>
+										</Link>
+									</div>
+								)}
+							</div>
 
 							{/* DROPDOWN MOBILE: PRODUTOS */}
 							<div className="border border-transparent rounded-xl overflow-hidden">
@@ -266,10 +283,10 @@ export default function Navbar() {
 									className={`w-full p-4 font-bold flex items-center justify-between text-slate-700 hover:bg-slate-50 transition-colors ${expandedMenu === 'produtos' ? 'bg-slate-50' : ''}`}
 								>
 									Produtos
-									<ChevronDown size={20} className={`transition-transform duration-300 ${expandedMenu === 'produtos' ? 'rotate-180 text-[#005831]' : 'text-slate-400'}`} />
+									{/* <ChevronDown size={20} className={`transition-transform duration-300 ${expandedMenu === 'produtos' ? 'rotate-180 text-[#005831]' : 'text-slate-400'}`} /> */}
 								</button>
 
-								{expandedMenu === 'produtos' && (
+								{/*{expandedMenu === 'produtos' && (
 									<div className="bg-slate-50 px-4 pb-4 grid gap-2 animate-in slide-in-from-top-2">
 										<Link href="/produtos/pecas" onClick={handleMobileLinkClick} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-100 shadow-sm active:scale-95 transition-transform">
 											<div className="bg-green-100 p-2 rounded-full text-[#005831]"><Package size={18} /></div>
@@ -284,7 +301,7 @@ export default function Navbar() {
 											<span className="font-semibold text-slate-700">Pneus</span>
 										</Link>
 									</div>
-								)}
+								)} */}
 							</div>
 
 							<Link

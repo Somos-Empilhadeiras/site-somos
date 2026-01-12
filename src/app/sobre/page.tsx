@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import DynamicBanner from '@/components/admin/banners/DynamicBanner';
 import Link from 'next/link';
 import {

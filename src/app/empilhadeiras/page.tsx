@@ -19,9 +19,6 @@ import ItemCard from '@/components/admin/items/ItemCard';
 import ModalItem from '@/components/admin/items/ModalItem';
 import { Empilhadeira } from '@/types';
 
-/* ======================================================
-   COMPONENTE DA SESSÃO (MANTIDO IGUAL, POIS VOCÊ GOSTOU)
-====================================================== */
 interface ForkliftSectionProps {
   id: string;
   title: string;

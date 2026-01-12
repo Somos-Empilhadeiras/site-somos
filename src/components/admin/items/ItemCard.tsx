@@ -84,8 +84,8 @@ export default function ItemCard({
       // --- MENSAGEM MELHORADA AQUI ---
       const mensagem = `Olá! Vi no site da Somos e gostaria de uma *cotação* para este equipamento:
 
-\u{1F69C} *Modelo:* ${empilhadeira.name}
-\u{1F517}*Link:* ${linkDireto}
+*Modelo:* ${empilhadeira.name}
+*Link:* ${linkDireto}
 
 Poderia me passar valores e disponibilidade?`;
 
@@ -197,16 +197,8 @@ Poderia me passar valores e disponibilidade?`;
                   </div>
                 )}
 
-                <div className="flex flex-col border-l border-slate-200 pl-2 border-t mt-1">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
-                    <Calendar size={10} /> Ano
-                  </span>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-700">{empilhadeira.year}</span>
-                  </div>
-                </div>
 
-                <div className="col-span-2 flex flex-col border-slate-200 border-t mt-1">
+                <div className="col-span-1 flex flex-col border-slate-200 border-t border-l pl-2 mt-1">
                   <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
                     <Settings size={10} /> Motor
                   </span>
