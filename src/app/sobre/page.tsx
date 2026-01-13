@@ -86,8 +86,8 @@ export default function About() {
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
           {[
             { value: '2023', label: 'Ano de Fundação' },
+            { value: '5', label: 'Estados Atendidos' },
             { value: '+100', label: 'Clientes Atendidos' },
-            { value: '24h', label: 'Suporte Técnico' },
             { value: '100%', label: 'Comprometimento' },
           ].map((item, index) => (
             <div

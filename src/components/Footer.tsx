@@ -66,7 +66,7 @@ export default function Footer() {
 						<div>
 							<p className="font-semibold mb-3">Empilhadeiras</p>
 							<ul className="space-y-2">
-								<li><Link href="/empilhadeiras">Todas</Link></li>
+								<li><Link href="/empilhadeiras">Todas as Empilhadeiras</Link></li>
 								<li><Link href="/empilhadeiras/eletricas">Elétricas</Link></li>
 								<li><Link href="/empilhadeiras/combustao">Combustão</Link></li>
 							</ul>

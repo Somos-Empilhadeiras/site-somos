@@ -188,11 +188,10 @@ Poderia me passar valores e disponibilidade?`;
                   // Se for combustão: Ano ou Combustível detalhado
                   <div className="flex flex-col pt-2 border-t border-slate-200 mt-1">
                     <span className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
-                      <Gauge size={10} /> Detalhes
+                      <Zap size={10} /> SISTEMA ELETRICO
                     </span>
                     <div className="flex gap-3">
-                      {empilhadeira.year && <span className="text-xs font-bold text-slate-700">{empilhadeira.year}</span>}
-                      <span className="text-xs text-slate-600">Motor Combustão</span>
+                      {empilhadeira.voltage && <span className="text-xs font-bold text-slate-700">{empilhadeira.voltage}V</span>}
                     </div>
                   </div>
                 )}

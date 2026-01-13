@@ -3,16 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { X, ArrowRight, ChevronLeft, ChevronRight, ShoppingBag, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
-
-// --- INTERFACES ---
-
-interface Product {
-  id: string | number;
-  name: string;
-  image_url: string;
-  model: string;
-  brand: string;
-}
+import { Empilhadeira } from '@/types';
 
 interface CarouselItem {
   title: string;
@@ -63,11 +54,11 @@ interface Props {
 
 export default function DynamicBanner({ id, className = '' }: Props) {
   const [banner, setBanner] = useState<BannerData | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Empilhadeira[]>([]);
   const [isVisible, setIsVisible] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // --- 1. BUSCA DADOS (VERSÃO CORRIGIDA E BLINDADA) ---
+  // --- 1. BUSCA DADOS ---
   useEffect(() => {
     async function fetchBannerAndProducts() {
       try {
@@ -75,40 +66,36 @@ export default function DynamicBanner({ id, className = '' }: Props) {
         if (!res.ok) return;
         const data: any[] = await res.json();
 
-        // 1. Filtra candidatos (Ativos e que pertencem a este ID)
+        // 1. Filtra candidatos
         const candidates = data.filter((b: any) => {
           const bannerIds = b.ids || b.slot_ids || [];
           const isActive = b.is_active !== undefined ? b.is_active : b.isActive;
           return isActive && bannerIds.includes(id);
         });
 
-        // 2. ORDENAÇÃO FORÇADA: O mais novo (maior ID) fica por último
+        // 2. Ordena
         candidates.sort((a: any, b: any) => {
           if (a.id < b.id) return -1;
           if (a.id > b.id) return 1;
           return 0;
         });
 
-        // 3. Pega o último da lista (O Vencedor)
+        // 3. Pega o último
         const found = candidates.length > 0 ? candidates[candidates.length - 1] : undefined;
 
         if (found) {
-          // --- BLINDAGEM: PARSE DOS SLIDES ---
+          // Parse Slides
           let safeSlides: CarouselItem[] = [];
           try {
-            // Tenta pegar de todas as formas possíveis que o banco pode mandar
             const rawSlides = found.carousel_items || found.carouselItems;
-
             if (Array.isArray(rawSlides)) {
               safeSlides = rawSlides;
             } else if (typeof rawSlides === 'string') {
               safeSlides = JSON.parse(rawSlides);
             }
-          } catch (e) {
-            console.error("Erro parsing slides:", e);
-          }
+          } catch (e) { console.error("Erro parsing slides:", e); }
 
-          // --- BLINDAGEM: PARSE DOS PRODUTOS ---
+          // Parse Product IDs
           let safeProductIds: string[] = [];
           try {
             const rawIds = found.product_ids || found.productIds;
@@ -121,11 +108,8 @@ export default function DynamicBanner({ id, className = '' }: Props) {
                 safeProductIds = rawIds.split(',').map((s: string) => s.trim());
               }
             }
-          } catch (e) {
-            console.error("Erro parsing productIds:", e);
-          }
+          } catch (e) { console.error("Erro parsing productIds:", e); }
 
-          // Monta o objeto final normalizando os nomes
           const bannerData: BannerData = {
             id: found.id,
             ids: found.ids || [],
@@ -136,11 +120,8 @@ export default function DynamicBanner({ id, className = '' }: Props) {
             imageUrl: found.image_url || found.imageUrl,
             ctaText: found.cta_text || found.ctaText,
             ctaLink: found.cta_link || found.ctaLink,
-
-            // Dados tratados
             productIds: safeProductIds,
             carouselItems: safeSlides,
-
             imagePosition: found.image_position || found.imagePosition || 'left',
             height: found.height || 'h-[80vh]',
             contentAlign: found.content_align || found.contentAlign || 'left',
@@ -158,12 +139,11 @@ export default function DynamicBanner({ id, className = '' }: Props) {
 
           setBanner(bannerData);
 
-          // Busca produtos da API se for vitrine
           if (bannerData.layout === 'product_grid' && safeProductIds.length > 0) {
             try {
               const prodRes = await fetch('/api/empilhadeiras?limit=100');
               if (prodRes.ok) {
-                const allProducts: Product[] = await prodRes.json();
+                const allProducts: Empilhadeira[] = await prodRes.json();
                 const filtered = allProducts.filter(p => safeProductIds.includes(String(p.id)));
                 setProducts(filtered);
               }
@@ -179,7 +159,7 @@ export default function DynamicBanner({ id, className = '' }: Props) {
     fetchBannerAndProducts();
   }, [id]);
 
-  // --- 2. CARROSSEL LÓGICA ---
+  // --- CARROSSEL ---
   const nextSlide = useCallback(() => {
     if (banner?.carouselItems && banner.carouselItems.length > 0) {
       setCurrentSlide((prev) => (prev + 1) % banner.carouselItems.length);
@@ -193,7 +173,6 @@ export default function DynamicBanner({ id, className = '' }: Props) {
   };
 
   useEffect(() => {
-    // Só inicia o timer se tiver mais de 1 slide
     if (banner?.layout === 'carousel' && banner.carouselItems.length > 1) {
       const intervalTime = (banner.slideDuration || 5) * 1000;
       const timer = setInterval(nextSlide, intervalTime);
@@ -209,95 +188,85 @@ export default function DynamicBanner({ id, className = '' }: Props) {
     large: { title: 'text-5xl md:text-7xl lg:text-8xl', desc: 'text-xl md:text-3xl' }
   }[banner.textSize || 'medium'];
 
-  console.log('ESTRUTURA DO BANNER:', banner);
+  // === REMOVIDO O BLOQUEIO ===
+  // if (!product) return null; <--- ISSO ESTAVA BLOQUEANDO TUDO
+  // const categoria = ... <--- MOVIDO PARA DENTRO DO LOOP
 
-// === 1. VITRINE ===
+  // === 1. VITRINE ===
   if (banner.layout === 'product_grid') {
-    
-    // 1. Extraindo as cores corretas baseadas no seu Console Log
-    const bgColor = banner.bgColor || '#15803d';           // Cor do Fundo
-    const titleColor = banner.titleColor || '#0f172a';     // Cor do Título
-    const descColor = banner.descColor || '#334155';       // Cor da Descrição
-    const align = banner.contentAlign || 'center';         // Alinhamento (left, center, right)
-
-    // Ajuste para a barra decorativa (usa a cor do título ou do texto geral)
+    const bgColor = banner.bgColor || '#15803d';
+    const titleColor = banner.titleColor || '#0f172a';
+    const descColor = banner.descColor || '#334155';
+    const align = banner.contentAlign || 'center';
     const decorColor = titleColor || banner.textColor || '#000';
 
     return (
-      <section 
+      <section
         className={`w-full py-16 md:py-24 ${className}`}
-        // AQUI: Aplica a cor de fundo do banco (#58FEB3)
-        style={{ backgroundColor: bgColor }} 
+        style={{ backgroundColor: bgColor }}
       >
         <div className="container mx-auto px-4">
-          <div 
-            className="mb-12 max-w-3xl mx-auto"
-            // AQUI: Aplica o alinhamento (left/center/right)
-            style={{ textAlign: align }} 
-          >
-            <h2 
-              className="text-3xl md:text-4xl font-bold mb-4"
-              // AQUI: Aplica a cor do título (#e00000 ou #FFFFFF)
-              style={{ color: titleColor }} 
-            >
+          <div className="mb-12 max-w-3xl mx-auto" style={{ textAlign: align }}>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: titleColor }}>
               {banner.title}
             </h2>
-            
             {banner.description && (
-              <p 
-                className="text-lg leading-relaxed"
-                // AQUI: Aplica a cor da descrição (#e2e8f0)
-                style={{ color: descColor }}
-              >
+              <p className="text-lg leading-relaxed" style={{ color: descColor }}>
                 {banner.description}
               </p>
             )}
-            
-            {/* Barra decorativa que acompanha o alinhamento */}
-            <div 
+            <div
               className={`w-20 h-1.5 mt-6 rounded-full opacity-60 ${align === 'center' ? 'mx-auto' : ''}`}
-              style={{ backgroundColor: decorColor }} 
+              style={{ backgroundColor: decorColor }}
             ></div>
           </div>
 
           {products.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-8">
-              {products.map((product) => (
-                <Link href={`/empilhadeiras/${product.id}`} key={product.id} className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 w-full max-w-[320px] overflow-hidden border border-slate-100 flex flex-col text-left">
-                  <div className="bg-slate-100/60 p-6 h-64 flex items-center justify-center relative">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-slate-300 gap-2"><ShoppingBag size={32} /><span className="text-xs font-medium">Sem foto</span></div>
-                    )}
-                    {product.brand && <span className="absolute top-4 right-4 bg-white/90 backdrop-blur text-slate-700 text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-slate-200 uppercase tracking-wide">{product.brand}</span>}
-                  </div>
-                  <div className="p-6 flex-1 flex flex-col">
-                    <div className="mb-4">
-                      <h3 className="text-lg font-bold text-slate-800 leading-tight group-hover:text-green-700 transition-colors">{product.name}</h3>
-                      <p className="text-xs text-slate-500 mt-1 font-mono uppercase">{product.model ? `Modelo: ${product.model}` : 'Ver Detalhes'}</p>
+              {products.map((product) => {
+                // CALCULA A CATEGORIA AQUI DENTRO, PARA CADA PRODUTO INDIVIDUALMENTE
+                const categoria = product.engine?.includes("Elétrica") ? "eletricas" : "combustao";
+                const image =
+                  product.imageUrl ||
+                  (product as any).image_url;
+                return (
+                  <Link href={`empilhadeiras/${categoria}?q=${product.model}`} key={product.id} className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 w-full max-w-[320px] overflow-hidden border border-slate-100 flex flex-col text-left">
+                    <div className="bg-slate-100/60 p-6 h-64 flex items-center justify-center relative">
+                      {image ? (
+                        <img src={image} alt={product.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-slate-300 gap-2"><ShoppingBag size={32} /><span className="text-xs font-medium">Sem foto</span></div>
+                      )}
+                      {product.brand && <span className={`absolute top-4 left-4 bg-white/90 backdrop-blur text-slate-700 text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-slate-200 uppercase tracking-wide`}>{product.brand}</span>}
+                      {product.engine && <span className={`absolute top-4 right-4 ${product.engine.toLowerCase().includes("elétrica") ? 'bg-[#67DB1A]' : 'bg-orange-600'} backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm border border-slate-200 uppercase tracking-wide`}>{product.engine}</span>}
                     </div>
-                    <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-1 rounded">Disponível</span>
-                      <span className="text-sm font-medium text-slate-400 group-hover:text-green-700 group-hover:translate-x-1 transition-all flex items-center gap-1">Ver detalhes <ArrowRight size={14} /></span>
+                    <div className="p-6 flex-1 flex flex-col">
+                      <div className="mb-4">
+                        <h3 className="text-lg font-bold text-slate-800 leading-tight group-hover:text-green-700 transition-colors">{product.name}</h3>
+                        <p className="text-xs text-slate-500 mt-1 font-mono uppercase">{product.model ? `Modelo: ${product.model}` : 'Ver Detalhes'}</p>
+                      </div>
+                      <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-1 rounded">Disponível</span>
+                        <span className="text-sm font-medium text-slate-400 group-hover:text-green-700 group-hover:translate-x-1 transition-all flex items-center gap-1">Ver detalhes <ArrowRight size={14} /></span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-200">
-               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 mb-4 text-slate-400"><ShoppingBag size={24} /></div>
-               <p className="text-slate-500 font-medium">Nenhum destaque configurado.</p>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 mb-4 text-slate-400"><ShoppingBag size={24} /></div>
+              <p className="text-slate-500 font-medium">Nenhum destaque configurado.</p>
             </div>
           )}
         </div>
       </section>
     );
   }
-  // === 2. CARROSSEL (CORRIGIDO) ===
+
+  // === 2. CARROSSEL ===
   if (banner.layout === 'carousel') {
-    // Se não tiver slides, mostra um estado de aviso em vez de sumir
     if (!banner.carouselItems || banner.carouselItems.length === 0) {
       return (
         <div className={`w-full h-[40vh] bg-slate-900 flex flex-col items-center justify-center text-white ${className}`}>
@@ -319,21 +288,17 @@ export default function DynamicBanner({ id, className = '' }: Props) {
         {banner.carouselItems.map((item, index) => (
           <div
             key={index}
-            // Z-Index e Opacidade corrigidos para garantir transição suave
             className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
           >
-            {/* Background Image */}
             <div className="absolute inset-0">
               {item.imageUrl ? (
                 <img src={item.imageUrl} className="w-full h-full object-cover object-center" alt={item.title} />
               ) : (
                 <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500">Sem Imagem de Fundo</div>
               )}
-              {/* Overlay Gradiente Baseado no Alinhamento */}
               <div className={`absolute inset-0 bg-linear-to-r ${banner.contentAlign === 'right' ? 'from-transparent via-black/40 to-black/90' : banner.contentAlign === 'center' ? 'from-black/70 via-transparent to-black/70' : 'from-black/90 via-black/40 to-transparent'}`}></div>
             </div>
 
-            {/* Conteúdo Texto */}
             <div className={`relative z-20 container mx-auto px-6 h-full flex flex-col justify-center ${alignClasses}`}>
               <div className="max-w-4xl space-y-6 pt-20">
                 {item.title && <h2 className={`${textSizes.title} font-extrabold leading-tight drop-shadow-2xl`} style={{ color: banner.titleColor }}>{item.title}</h2>}
@@ -356,13 +321,10 @@ export default function DynamicBanner({ id, className = '' }: Props) {
           </div>
         ))}
 
-        {/* Setas de Navegação (Aparecem só se tiver > 1 slide) */}
         {banner.carouselItems.length > 1 && (
           <>
             <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full z-30 transition-all hover:scale-110"><ChevronLeft size={40} /></button>
             <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full z-30 transition-all hover:scale-110"><ChevronRight size={40} /></button>
-
-            {/* Bolinhas indicadoras */}
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-3">
               {banner.carouselItems.map((_, idx) => (
                 <button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-3 rounded-full transition-all duration-500 shadow-sm ${idx === currentSlide ? 'w-12 ring-2 ring-white/50' : 'bg-white/40 w-3 hover:bg-white'}`} style={{ backgroundColor: idx === currentSlide ? banner.btnColor : undefined }} />
@@ -387,7 +349,7 @@ export default function DynamicBanner({ id, className = '' }: Props) {
     );
   }
 
-  // === 4. PADRÃO (HERO FULL / COMPACT) ===
+  // === 4. PADRÃO ===
   return (
     <div className={`${className} w-full overflow-hidden`} style={{ backgroundColor: banner.bgColor }}>
       <div className={`container mx-auto px-4 ${banner.layout === 'full' ? 'py-20 md:py-32' : 'py-12'}`}>
