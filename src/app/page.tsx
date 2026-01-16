@@ -209,7 +209,7 @@ export default function Home() {
                     Chamar no WhatsApp
                   </a>
                   <Link
-                    href="mailto:comercial@somosempilhadeiras.com.br"
+                    href="mailto:heli@somosempilhadeiras.com.br"
                     className="flex items-center justify-center gap-3 w-full bg-white hover:bg-slate-100 text-[#005831] py-4 rounded-xl font-bold shadow-lg transition-colors"
                   >
                     <Mail size={24} />
@@ -240,11 +240,11 @@ export default function Home() {
               <span className="text-[#005831] font-bold text-lg">(62) 99183-4188</span>
             </Link>
 
-            <Link href="mailto:comercial@somosempilhadeiras.com.br" className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 flex flex-col items-center text-center group">
+            <Link href="mailto:heli@somosempilhadeiras.com.br" className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 flex flex-col items-center text-center group">
               <div className="w-16 h-16 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center mb-6 group-hover:bg-blue-700 group-hover:text-white transition-colors"><Mail size={32} /></div>
               <h3 className="text-xl font-bold text-slate-800 mb-2">E-mail Corporativo</h3>
               <p className="text-slate-500 mb-4">Envie seu projeto ou cotação</p>
-              <span className="text-blue-700 font-bold text-sm md:text-base break-all">comercial@somosempilhadeiras.com.br</span>
+              <span className="text-blue-700 font-bold text-sm md:text-base break-all">heli@somosempilhadeiras.com.br</span>
             </Link>
 
             <Link href="https://maps.google.com/?q=Av.+Caiapó,+1190+-+Santa+Genoveva,+Goiânia+-+GO" target="_blank" className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 flex flex-col items-center text-center group">
