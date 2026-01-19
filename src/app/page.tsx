@@ -17,9 +17,25 @@ export default function Home() {
 
       {/* 1. HERO SLIDER (Impacto Visual) */}
       <DynamicBanner id="home-topo" className="absolute top-0 left-0 w-full z-50" />
+      
+      <div className="w-full overflow-hidden min-h-[60vh] md:min-h-[80vh]">
+        <div className="w-full overflow-hidden flex items-center justify-center -translate-y-28 bg-gray-300 h-full animate-pulse absolute">
+          {/* <svg
+            className="w-full h-full object-cover font-bold opacity-50"
+            xmlns="http://www.w3.org/2000/svg"
+            preserveAspectRatio="xMidYMid slice"
+            viewBox="0 0 640 360"
+          >
+            <rect width="640" height="360" fill="#ccc" />
+            <text x="50%" y="40%" fill="#999" dy=".3em" fontSize="24" fontFamily="Arial" textAnchor="middle">
+              Carregando Banner...
+            </text>
+          </svg> */}
 
-
-      <DynamicBanner id="home-slides" />
+          <img src="/folha.png" className='w-42 h-42 animate-pulse'/>
+        </div>
+        <DynamicBanner id="home-slides" />
+      </div>
 
       {/* 2. BARRA DE DESTAQUES (Conexão visual sólida) */}
       <div className="bg-[#005831] border-b-4 border-yellow-400 relative z-30">
