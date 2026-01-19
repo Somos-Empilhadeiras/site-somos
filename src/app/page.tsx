@@ -19,7 +19,7 @@ export default function Home() {
       <DynamicBanner id="home-topo" className="absolute top-0 left-0 w-full z-50" />
       
       <div className="w-full overflow-hidden min-h-[60vh] md:min-h-[80vh]">
-        <div className="w-full overflow-hidden flex items-center justify-center -translate-y-28 bg-gray-300 h-full animate-pulse absolute">
+        <div className="w-full overflow-hidden flex flex-col items-center gap-1 justify-center -translate-y-28 bg-gray-300 h-full animate-pulse absolute">
           {/* <svg
             className="w-full h-full object-cover font-bold opacity-50"
             xmlns="http://www.w3.org/2000/svg"
@@ -33,6 +33,8 @@ export default function Home() {
           </svg> */}
 
           <img src="/folha.png" className='w-42 h-42 animate-pulse'/>
+
+          <p className='font-extrabold text-green-800 text-4xl'>Carregando...</p>
         </div>
         <DynamicBanner id="home-slides" />
       </div>
