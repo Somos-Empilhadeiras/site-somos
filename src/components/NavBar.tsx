@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { ChevronDown, Menu, X, Phone, MapPin, Zap, Flame, DownloadCloud, MessageCircle } from 'lucide-react';
 import { REGIONAL_CONTACTS } from '@/lib/constants';
 
+
 export default function Navbar() {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
