@@ -104,7 +104,7 @@ export default function Navbar() {
 								</Link>
 							</div>
 
-							<Link href="https://br.linkedin.com/company/somosempilhadeiras" className={`px-4 py-2 rounded-full transition-all ${isActive('https://br.linkedin.com/company/somosempilhadeiras')}`}>
+							<Link href="https://somosempilhadeiras.vagas.solides.com.br/" className={`px-4 py-2 rounded-full transition-all ${isActive('https://somosempilhadeiras.vagas.solides.com.br/')}`}>
 								Trabalhe Conosco
 							</Link>
 
